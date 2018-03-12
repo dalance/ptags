@@ -251,15 +251,20 @@ mod tests {
 
     #[test]
     fn test_git_files() {
-        let args = vec!["ptags", "-t", "4"];
+        let args = vec!["ptags", "-t", "9"];
         let opt = Opt::from_iter(args.iter());
         let files = git_files(&opt).unwrap();
         assert_eq!(
             files,
             vec![
-                ".gitignore\n",
                 "Cargo.lock\n",
+                ".cargo/config\n",
+                ".gitignore\n",
+                ".travis.yml\n",
                 "Cargo.toml\n",
+                "LICENSE\n",
+                "Makefile\n",
+                "README.md\n",
                 "src/main.rs\n",
             ]
         );
@@ -274,7 +279,7 @@ mod tests {
         let mut iter = str::from_utf8(&outputs[0].stdout).unwrap().lines();
         assert_eq!(
             iter.next().unwrap(),
-            "Opt\tsrc/main.rs\t/^struct Opt {$/;\"\ts"
+            "BIN_NAME\tMakefile\t/^BIN_NAME = ptags$/;\"\tm"
         );
     }
 

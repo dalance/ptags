@@ -13,7 +13,7 @@ export RUST_VERSION
 all: test
 
 test:
-	cargo run
+	cargo test
 
 clean:
 	cargo clean
