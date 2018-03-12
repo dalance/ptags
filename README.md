@@ -1,2 +1,2 @@
 # ptags
-A parallel ctags wrapper for git repository
+A parallel universal-ctags wrapper for git repository
