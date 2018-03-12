@@ -17,7 +17,7 @@ script:
 - make test
 - if [[ $TRAVIS_OS_NAME == "linux" ]]; then make release_lnx; fi
 - if [[ $TRAVIS_OS_NAME == "linux" ]]; then make release_win; fi
-- if [[ $TRAVIS_OS_NAME == "osx"   ]]; then make release_osx; fi
+- if [[ $TRAVIS_OS_NAME == "osx"   ]]; then make release_mac; fi
 
 deploy:
   provider: releases
