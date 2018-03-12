@@ -105,11 +105,14 @@ fn git_files(opt: &Opt) -> Result<Vec<String>> {
         .args(&opt.git_opt)
         .current_dir(&opt.dir)
         .output()
-        .or_else(|x|Err(ErrorKind::GitNotFound(opt.git_bin.clone(), x).into()));
+        .or_else(|x| Err(ErrorKind::GitNotFound(opt.git_bin.clone(), x).into()));
     let output = output?;
 
     if !output.status.success() {
-        bail!(ErrorKind::GitLsFailed(git_cmd, String::from(str::from_utf8(&output.stderr)?)));
+        bail!(ErrorKind::GitLsFailed(
+            git_cmd,
+            String::from(str::from_utf8(&output.stderr)?)
+        ));
     }
 
     let list = str::from_utf8(&output.stdout)?.lines();
@@ -123,10 +126,7 @@ fn git_files(opt: &Opt) -> Result<Vec<String>> {
 }
 
 fn call_ctags(opt: &Opt, files: &Vec<String>) -> Result<Vec<Output>> {
-    let mut ctags_cmd = format!(
-        "{} -L - -f - ",
-        opt.ctags_bin.to_string_lossy()
-        );
+    let mut ctags_cmd = format!("{} -L - -f - ", opt.ctags_bin.to_string_lossy());
     for o in &opt.ctags_opt {
         ctags_cmd = format!("{} {}", ctags_cmd, o);
     }
@@ -176,11 +176,15 @@ fn call_ctags(opt: &Opt, files: &Vec<String>) -> Result<Vec<Output>> {
 
     let mut outputs = Vec::new();
     for child in children {
-        let child: Result<Child> = child?.or_else(|x|Err(ErrorKind::CtagsNotFound(opt.ctags_bin.clone(), x).into()));
+        let child: Result<Child> =
+            child?.or_else(|x| Err(ErrorKind::CtagsNotFound(opt.ctags_bin.clone(), x).into()));
         let output = child?.wait_with_output()?;
 
         if !output.status.success() {
-            bail!(ErrorKind::CtagsFailed(ctags_cmd, String::from(str::from_utf8(&output.stderr)?)));
+            bail!(ErrorKind::CtagsFailed(
+                ctags_cmd,
+                String::from(str::from_utf8(&output.stderr)?)
+            ));
         }
 
         outputs.push(output);
