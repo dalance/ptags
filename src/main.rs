@@ -253,14 +253,15 @@ mod tests {
     fn test_git_files() {
         let args = vec!["ptags", "-t", "9"];
         let opt = Opt::from_iter(args.iter());
-        let files = git_files(&opt).unwrap();
+        let mut files = git_files(&opt).unwrap();
+        files.sort();
         assert_eq!(
             files,
             vec![
-                "Cargo.lock\n",
                 ".cargo/config\n",
                 ".gitignore\n",
                 ".travis.yml\n",
+                "Cargo.lock\n",
                 "Cargo.toml\n",
                 "LICENSE\n",
                 "Makefile\n",
