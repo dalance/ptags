@@ -15,3 +15,14 @@ script:
 - if [[ $TRAVIS_OS_NAME == "linux" ]]; then make release_lnx; fi
 - if [[ $TRAVIS_OS_NAME == "linux" ]]; then make release_win; fi
 - if [[ $TRAVIS_OS_NAME == "osx"   ]]; then make release_osx; fi
+
+deploy:
+  provider: releases
+  api_key:
+    secure: KLjGA3bSdiaXD9hiWoqiVnGJPOXP9ncYsLdx269hwGtOxOt6jeBRiOnEVsQS4M5mI5tz8FZVebKweIIghD8BUVggoaCvgIi5Yhd+qKvR+PoxCWPnJKQlpSyTh6M01xFa9UhqjYXe4QVRgdTUJgGHxsfpnHtMrkj8v0FdO3LXsbqKaCRXR9ap/fxft2A+KV3Uf+G9UCtFkfIbc0ZwdvBhFEE8uoWIoz8HuCstzlxs+KB0ynhwPAt6Y7FboG8ahfC7SFV43xtgFdO4cZgoacrRPJ6r5HkPEntOMlGOhnBbezKIwsjYBlX3LkE7YJPWZ518OF4I9A6WmOgNv9dFSBBOnXmcwFv9eXu09Quz3gXfreM3nXXNwnajADkAK9fPNq1i2eSaHcM+PzWuTRiNO5nTnriJd97OuIK7uzi0ehCbg4xuzBlzOmLoATK/yG9GZ+ClFZsV1gRxSnlrwGbU7y/PeVYVPBdcI2o8O3u0SEIuV4QnYHBuM8V78HYBoQt9pdFdwMkq52rX1qyO3b7/lnzBv/5qQsxuXI6ZmxWvpB3upcgRN34v2feKEg9cOsSLf9cKQRCcnmUMl4EN1+hs8nbi3jgYMJdXbfZjr4BGJ4Iwx2EccBkuenuDtsF1jNR8m2KqD/NOcxFt31HHiMR7o3jm1jGplEE152A2AvVHfDMU2y8=
+  file: ptags*.zip
+  file_glob: true
+  skip_cleanup: true
+  on:
+    repo: dalance/ptags
+    tags: true
