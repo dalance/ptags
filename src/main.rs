@@ -7,7 +7,7 @@ extern crate time;
 
 use std::fs;
 use std::path::PathBuf;
-use std::process::{Command, Output, Stdio};
+use std::process::{Child, Command, Output, Stdio};
 use std::str;
 use std::io::{BufReader, BufWriter, Read, Write};
 use std::thread;
@@ -54,6 +54,20 @@ error_chain! {
         FromUtf8Error(::std::str::Utf8Error);
         FromRecvError(::std::sync::mpsc::RecvError);
     }
+    errors {
+        GitLsFailed(cmd: String, err: String) {
+            display("git ls-files failed: {}\n{}", cmd, err)
+        }
+        GitNotFound(path: PathBuf, err: std::io::Error) {
+            display("git command \"{}\" failed: {}", path.to_string_lossy(), err)
+        }
+        CtagsFailed(cmd: String, err: String) {
+            display("ctags failed: {}\n{}", cmd, err)
+        }
+        CtagsNotFound(path: PathBuf, err: std::io::Error) {
+            display("ctags command \"{}\" failed: {}", path.to_string_lossy(), err)
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -71,25 +85,32 @@ macro_rules! watch_time (
 );
 
 fn git_files(opt: &Opt) -> Result<Vec<String>> {
+    let mut git_cmd = format!(
+        "{} ls-files --cached --other --exclude-standard ",
+        opt.git_bin.to_string_lossy()
+    );
+    for o in &opt.git_opt {
+        git_cmd = format!("{} {}", git_cmd, o);
+    }
+    git_cmd = format!("{} {}", git_cmd, opt.dir.to_string_lossy());
     if opt.verbose {
-        eprint!(
-            "Call : {} ls-files --cached --other --exclude-standard ",
-            opt.git_bin.to_string_lossy()
-        );
-        for o in &opt.git_opt {
-            eprint!("{} ", o);
-        }
-        eprintln!("");
+        eprintln!("Call : {}", git_cmd);
     }
 
-    let output = Command::new(&opt.git_bin)
+    let output: Result<Output> = Command::new(&opt.git_bin)
         .arg("ls-files")
         .arg("--cached")
         .arg("--other")
         .arg("--exclude-standard")
         .args(&opt.git_opt)
         .current_dir(&opt.dir)
-        .output()?;
+        .output()
+        .or_else(|x|Err(ErrorKind::GitNotFound(opt.git_bin.clone(), x).into()));
+    let output = output?;
+
+    if !output.status.success() {
+        bail!(ErrorKind::GitLsFailed(git_cmd, String::from(str::from_utf8(&output.stderr)?)));
+    }
 
     let list = str::from_utf8(&output.stdout)?.lines();
     let mut files = vec![String::from(""); opt.thread];
@@ -102,6 +123,14 @@ fn git_files(opt: &Opt) -> Result<Vec<String>> {
 }
 
 fn call_ctags(opt: &Opt, files: &Vec<String>) -> Result<Vec<Output>> {
+    let mut ctags_cmd = format!(
+        "{} -L - -f - ",
+        opt.ctags_bin.to_string_lossy()
+        );
+    for o in &opt.ctags_opt {
+        ctags_cmd = format!("{} {}", ctags_cmd, o);
+    }
+
     let (tx, rx) = mpsc::channel();
 
     for i in 0..opt.thread {
@@ -112,11 +141,7 @@ fn call_ctags(opt: &Opt, files: &Vec<String>) -> Result<Vec<Output>> {
         let ctags_opt = opt.ctags_opt.clone();
 
         if opt.verbose {
-            eprint!("Call : {} -L - -f - ", opt.ctags_bin.to_string_lossy());
-            for o in &opt.ctags_opt {
-                eprint!("{} ", o);
-            }
-            eprintln!("");
+            eprintln!("Call : {}", ctags_cmd);
         }
 
         thread::spawn(move || {
@@ -127,6 +152,7 @@ fn call_ctags(opt: &Opt, files: &Vec<String>) -> Result<Vec<Output>> {
                 .current_dir(dir)
                 .stdin(Stdio::piped())
                 .stdout(Stdio::piped())
+                .stderr(Stdio::piped())
                 .spawn();
             match child {
                 Ok(mut x) => {
@@ -148,12 +174,19 @@ fn call_ctags(opt: &Opt, files: &Vec<String>) -> Result<Vec<Output>> {
         children.push(rx.recv());
     }
 
-    let mut output = Vec::new();
+    let mut outputs = Vec::new();
     for child in children {
-        output.push(child??.wait_with_output()?);
+        let child: Result<Child> = child?.or_else(|x|Err(ErrorKind::CtagsNotFound(opt.ctags_bin.clone(), x).into()));
+        let output = child?.wait_with_output()?;
+
+        if !output.status.success() {
+            bail!(ErrorKind::CtagsFailed(ctags_cmd, String::from(str::from_utf8(&output.stderr)?)));
+        }
+
+        outputs.push(output);
     }
 
-    Ok(output)
+    Ok(outputs)
 }
 
 fn write_tags(opt: &Opt, outputs: &Vec<Output>) -> Result<()> {
