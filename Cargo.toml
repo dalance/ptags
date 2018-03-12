@@ -1,0 +1,19 @@
+[package]
+name = "ptags"
+version = "0.1.0"
+authors = ["dalance@gmail.com"]
+repository = "https://github.com/dalance/ptags"
+keywords = ["ctags"]
+categories = ["command-line-utilities"]
+license = "MIT"
+readme = "README.md"
+description = "A parallel ctags wrapper for git repository"
+
+[badges]
+travis-ci = { repository = "dalance/ptags" }
+
+[dependencies]
+error-chain = "0.11.0"
+structopt   = "0.2.5"
+tempfile    = "2.2.0"
+time        = "0.1.39"
