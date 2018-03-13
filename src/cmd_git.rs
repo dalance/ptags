@@ -101,6 +101,8 @@ mod tests {
                 "LICENSE",
                 "Makefile",
                 "README.md",
+                "src/cmd_ctags.rs",
+                "src/cmd_git.rs",
                 "src/main.rs",
             ]
         );
