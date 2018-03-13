@@ -77,9 +77,12 @@ ptags -c='--exclude=aaa/*' -c='--exclude=bbb/*'
 - OS : CentOS 7.4.1708
 
 ### Data
-- source1: https://github.com/llvm-mirror/llvm ( revision:ddf9edb4020, 29670files, 1.2GB )
-- source2: https://github.com/torvalds/linux ( revision:071e31e254e0, 52998files, 2.2GB )
-- source3: https://github.com/chromium/chromium ( revision:d79c68510b7e, 293205files, 13GB )
+
+| Name    | Repository                           | Revision     | Files  | Size[GB] |
+| ------- | ------------------------------------ | ------------ | ------ | -------- |
+| source1 | https://github.com/llvm-mirror/llvm  | ddf9edb4020  | 29670  | 1.2      |
+| source2 | https://github.com/torvalds/linux    | 071e31e254e0 | 52998  | 2.2      |
+| source3 | https://github.com/chromium/chromium | d79c68510b7e | 293205 | 13       |
 
 ### Result
 
