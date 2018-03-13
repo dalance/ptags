@@ -326,7 +326,7 @@ mod tests {
         let args = vec!["ptags", "--git-bin", "aaa"];
         let opt = Opt::from_iter(args.iter());
         let files = git_files(&opt);
-        assert_eq!(format!("{:?}", files), "Err(Error(Io(Error { repr: Os { code: 2, message: \"No such file or directory\" } }), State { next_error: None, backtrace: None }))");
+        assert_eq!(format!("{:?}", files), "Err(Error(GitNotFound(\"aaa\", Error { repr: Os { code: 2, message: \"No such file or directory\" } }), State { next_error: None, backtrace: None }))");
     }
 
     #[test]
@@ -335,6 +335,6 @@ mod tests {
         let opt = Opt::from_iter(args.iter());
         let files = git_files(&opt).unwrap();
         let outputs = call_ctags(&opt, &files);
-        assert_eq!(format!("{:?}", outputs), "Err(Error(Io(Error { repr: Os { code: 2, message: \"No such file or directory\" } }), State { next_error: None, backtrace: None }))");
+        assert_eq!(format!("{:?}", outputs), "Err(Error(CtagsNotFound(\"aaa\", Error { repr: Os { code: 2, message: \"No such file or directory\" } }), State { next_error: None, backtrace: None }))");
     }
 }
