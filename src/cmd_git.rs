@@ -85,7 +85,7 @@ impl CmdGit {
         let list = str::from_utf8(&output.stdout)?.lines();
         let mut ret = Vec::new();
         for l in list {
-            let mut path = String::from(l.split(" - ").nth(1).unwrap_or(""));
+            let mut path = String::from(l.split(' ').nth(2).unwrap_or(""));
             if path.starts_with(&prefix) {
                 path = path.replace(&prefix, "");
             } else {
