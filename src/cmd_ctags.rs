@@ -158,8 +158,8 @@ mod tests {
         let opt = Opt::from_iter(args.iter());
         let output = CmdCtags::get_tags_header(&opt).unwrap();
         assert_eq!(
-            output,
-            "!_TAG_FILE_FORMAT\t2\t/extended format; --format=1 will not append ;\" to lines/\n!_TAG_FILE_SORTED\t1\t/0=unsorted, 1=sorted, 2=foldcase/\n!_TAG_OUTPUT_MODE\tu-ctags\t/u-ctags or e-ctags/\n!_TAG_PROGRAM_AUTHOR\tUniversal Ctags Team\t//\n!_TAG_PROGRAM_NAME\tUniversal Ctags\t/Derived from Exuberant Ctags/\n!_TAG_PROGRAM_URL\thttps://ctags.io/\t/official site/\n!_TAG_PROGRAM_VERSION\t0.0.0\t/f9e6e3c1/\n"
+            output.lines().next().unwrap(),
+            "!_TAG_FILE_FORMAT\t2\t/extended format; --format=1 will not append ;\" to lines/"
         );
     }
 }
