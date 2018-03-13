@@ -34,7 +34,7 @@ error_chain! {
 pub struct CmdCtags;
 
 impl CmdCtags {
-    pub fn call(opt: &Opt, files: &Vec<String>) -> Result<Vec<Output>> {
+    pub fn call(opt: &Opt, files: &[String]) -> Result<Vec<Output>> {
         let mut ctags_cmd = format!("{} -L - -f - ", opt.bin_ctags.to_string_lossy());
         for o in &opt.opt_ctags {
             ctags_cmd = format!("{} {}", ctags_cmd, o);
@@ -71,8 +71,12 @@ impl CmdCtags {
                             let _ = stdin.write(file.as_bytes());
                         }
                         match x.wait_with_output() {
-                            Ok( mut x ) => { let _ = tx.send(Ok(x)); },
-                            Err( x ) => { let _ = tx.send(Err(x.into())); },
+                            Ok(mut x) => {
+                                let _ = tx.send(Ok(x));
+                            }
+                            Err(x) => {
+                                let _ = tx.send(Err(x.into()));
+                            }
                         }
                     }
                     Err(x) => {
@@ -126,7 +130,7 @@ impl CmdCtags {
 
 #[cfg(test)]
 mod tests {
-    use super::super::{Opt, git_files};
+    use super::super::{git_files, Opt};
     use super::CmdCtags;
     use std::str;
     use structopt::StructOpt;

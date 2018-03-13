@@ -28,7 +28,7 @@ error_chain! {
 pub struct CmdGit;
 
 impl CmdGit {
-    fn call(opt: &Opt, args: &Vec<String>) -> Result<Output> {
+    fn call(opt: &Opt, args: &[String]) -> Result<Output> {
         let cmd = CmdGit::get_cmd(&opt, &args)?;
         if opt.verbose {
             eprintln!("Call : {}", cmd);
@@ -115,7 +115,7 @@ impl CmdGit {
         Ok(String::from(list.next().unwrap_or("")))
     }
 
-    fn get_cmd(opt: &Opt, args: &Vec<String>) -> Result<String> {
+    fn get_cmd(opt: &Opt, args: &[String]) -> Result<String> {
         let mut cmd = format!("{}", opt.bin_git.to_string_lossy());
         for arg in args {
             cmd = format!("{} {}", cmd, arg);
@@ -162,10 +162,7 @@ mod tests {
         let args = vec!["ptags"];
         let opt = Opt::from_iter(args.iter());
         let files = CmdGit::lfs_ls_files(&opt).unwrap();
-        assert_eq!(
-            files,
-            Vec::<String>::new()
-        );
+        assert_eq!(files, Vec::<String>::new());
     }
 
     #[test]

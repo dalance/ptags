@@ -26,51 +26,64 @@ use time::PreciseTime;
 #[structopt(name = "ptags")]
 pub struct Opt {
     /// Number of threads
-    #[structopt(short = "t", long = "thread", default_value = "8")] thread: usize,
+    #[structopt(short = "t", long = "thread", default_value = "8")]
+    thread: usize,
 
     /// Output filename
     #[structopt(short = "f", long = "file", default_value = "tags", parse(from_os_str))]
     output: PathBuf,
 
     /// Search directory
-    #[structopt(name = "DIR", default_value = ".", parse(from_os_str))] dir: PathBuf,
+    #[structopt(name = "DIR", default_value = ".", parse(from_os_str))]
+    dir: PathBuf,
 
     /// Show statistics
-    #[structopt(short = "s", long = "stat")] stat: bool,
+    #[structopt(short = "s", long = "stat")]
+    stat: bool,
 
     /// Path to ctags binary
     #[structopt(long = "bin-ctags", default_value = "ctags", parse(from_os_str))]
     bin_ctags: PathBuf,
 
     /// Path to git binary
-    #[structopt(long = "bin-git", default_value = "git", parse(from_os_str))] bin_git: PathBuf,
+    #[structopt(long = "bin-git", default_value = "git", parse(from_os_str))]
+    bin_git: PathBuf,
 
     /// Options passed to ctags
-    #[structopt(short = "c", long = "opt-ctags")] opt_ctags: Vec<String>,
+    #[structopt(short = "c", long = "opt-ctags")]
+    opt_ctags: Vec<String>,
 
     /// Options passed to git
-    #[structopt(short = "g", long = "opt-git")] opt_git: Vec<String>,
+    #[structopt(short = "g", long = "opt-git")]
+    opt_git: Vec<String>,
 
     /// Options passed to git-lfs
-    #[structopt(long = "opt-git-lfs")] opt_git_lfs: Vec<String>,
+    #[structopt(long = "opt-git-lfs")]
+    opt_git_lfs: Vec<String>,
 
     /// Verbose mode
-    #[structopt(short = "v", long = "verbose")] verbose: bool,
+    #[structopt(short = "v", long = "verbose")]
+    verbose: bool,
 
     /// Exclude git-lfs tracked files
-    #[structopt(long = "exclude-lfs")] exclude_lfs: bool,
+    #[structopt(long = "exclude-lfs")]
+    exclude_lfs: bool,
 
     /// Include untracked files
-    #[structopt(long = "include-untracked")] include_untracked: bool,
+    #[structopt(long = "include-untracked")]
+    include_untracked: bool,
 
     /// Include ignored files
-    #[structopt(long = "include-ignored")] include_ignored: bool,
+    #[structopt(long = "include-ignored")]
+    include_ignored: bool,
 
     /// Include submodule files
-    #[structopt(long = "include-submodule")] include_submodule: bool,
+    #[structopt(long = "include-submodule")]
+    include_submodule: bool,
 
     /// Validate UTF8 sequence of tag file
-    #[structopt(long = "validate-utf8")] validate_utf8: bool,
+    #[structopt(long = "validate-utf8")]
+    validate_utf8: bool,
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -123,7 +136,7 @@ fn git_files(opt: &Opt) -> Result<Vec<String>> {
     Ok(files)
 }
 
-fn call_ctags(opt: &Opt, files: &Vec<String>) -> Result<Vec<Output>> {
+fn call_ctags(opt: &Opt, files: &[String]) -> Result<Vec<Output>> {
     Ok(CmdCtags::call(&opt, &files)?)
 }
 
@@ -131,7 +144,7 @@ fn get_tags_header(opt: &Opt) -> Result<String> {
     Ok(CmdCtags::get_tags_header(&opt)?)
 }
 
-fn write_tags(opt: &Opt, outputs: &Vec<Output>) -> Result<()> {
+fn write_tags(opt: &Opt, outputs: &[Output]) -> Result<()> {
     let mut iters = Vec::new();
     let mut lines = Vec::new();
     for o in outputs {
@@ -204,4 +217,3 @@ fn run() -> Result<()> {
 }
 
 quick_main!(run);
-
