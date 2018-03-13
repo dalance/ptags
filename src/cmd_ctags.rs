@@ -35,8 +35,8 @@ pub struct CmdCtags;
 
 impl CmdCtags {
     pub fn call(opt: &Opt, files: &Vec<String>) -> Result<Vec<Output>> {
-        let mut ctags_cmd = format!("{} -L - -f - ", opt.ctags_bin.to_string_lossy());
-        for o in &opt.ctags_opt {
+        let mut ctags_cmd = format!("{} -L - -f - ", opt.bin_ctags.to_string_lossy());
+        for o in &opt.opt_ctags {
             ctags_cmd = format!("{} {}", ctags_cmd, o);
         }
 
@@ -46,18 +46,18 @@ impl CmdCtags {
             let tx = tx.clone();
             let file = files[i].clone();
             let dir = opt.dir.clone();
-            let ctags_bin = opt.ctags_bin.clone();
-            let ctags_opt = opt.ctags_opt.clone();
+            let bin_ctags = opt.bin_ctags.clone();
+            let opt_ctags = opt.opt_ctags.clone();
 
             if opt.verbose {
                 eprintln!("Call : {}", ctags_cmd);
             }
 
             thread::spawn(move || {
-                let child = Command::new(ctags_bin)
+                let child = Command::new(bin_ctags)
                     .arg("-L -")
                     .arg("-f -")
-                    .args(ctags_opt)
+                    .args(opt_ctags)
                     .current_dir(dir)
                     .stdin(Stdio::piped())
                     .stdout(Stdio::piped())
@@ -87,7 +87,7 @@ impl CmdCtags {
         let mut outputs = Vec::new();
         for child in children {
             let child: Result<Child> =
-                child?.or_else(|x| Err(ErrorKind::CtagsNotFound(opt.ctags_bin.clone(), x).into()));
+                child?.or_else(|x| Err(ErrorKind::CtagsNotFound(opt.bin_ctags.clone(), x).into()));
             let output = child?.wait_with_output()?;
 
             if !output.status.success() {
@@ -106,10 +106,10 @@ impl CmdCtags {
     pub fn get_tags_header(opt: &Opt) -> Result<String> {
         let tmp_empty = NamedTempFile::new()?;
         let tmp_tags = NamedTempFile::new()?;
-        let _ = Command::new(&opt.ctags_bin)
+        let _ = Command::new(&opt.bin_ctags)
             .arg(format!("-L {}", tmp_empty.path().to_string_lossy()))
             .arg(format!("-f {}", tmp_tags.path().to_string_lossy()))
-            .args(&opt.ctags_opt)
+            .args(&opt.opt_ctags)
             .current_dir(&opt.dir)
             .status();
         let mut f = BufReader::new(tmp_tags);
@@ -145,7 +145,7 @@ mod tests {
 
     #[test]
     fn test_call_fail() {
-        let args = vec!["ptags", "--ctags-bin", "aaa"];
+        let args = vec!["ptags", "--bin-ctags", "aaa"];
         let opt = Opt::from_iter(args.iter());
         let files = git_files(&opt).unwrap();
         let outputs = CmdCtags::call(&opt, &files);

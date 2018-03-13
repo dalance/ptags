@@ -35,27 +35,32 @@ The tested version is below.
 ```
 ptags 0.1.0
 dalance@gmail.com
-A parallel ctags wrapper for git repository
+A parallel universal-ctags wrapper for git repository
 
 USAGE:
     ptags [FLAGS] [OPTIONS] [--] [DIR]
 
 FLAGS:
-    -h, --help       Prints help information
-    -s, --stat
-    -V, --version    Prints version information
-    -v, --verbose
+        --exclude-lfs          Exclude git-lfs tracked files
+    -h, --help                 Prints help information
+        --include-ignored      Include ignored files
+        --include-submodule    Include submodule files
+        --include-untracked    Include untracked files
+    -s, --stat                 Show statistics
+    -V, --version              Prints version information
+    -v, --verbose              Verbose mode
 
 OPTIONS:
-        --ctags-bin <ctags_bin>        [default: ctags]
-    -c, --ctags-opt <ctags_opt>...
-        --git-bin <git_bin>            [default: git]
-    -g, --git-opt <git_opt>...
-    -f, --file <output>                [default: tags]
-    -t, --thread <thread>              [default: 8]
+        --bin-ctags <bin_ctags>           Path to ctags binary [default: ctags]
+        --bin-git <bin_git>               Path to git binary [default: git]
+    -c, --opt-ctags <opt_ctags>...        Options passed to ctags
+    -g, --opt-git <opt_git>...            Options passed to git
+        --opt-git-lfs <opt_git_lfs>...    Options passed to git-lfs
+    -f, --file <output>                   Output filename [default: tags]
+    -t, --thread <thread>                 Number of threads [default: 8]
 
 ARGS:
-    <DIR>     [default: .]
+    <DIR>    Search directory [default: .]
 ```
 
 You can pass options to `ctags` by`-c`/`--ctags_opt` option like below.

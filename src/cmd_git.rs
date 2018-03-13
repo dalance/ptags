@@ -37,7 +37,7 @@ impl CmdGit {
         } else if opt.include_untracked {
             args.push(String::from("--other"));
         }
-        args.append(&mut opt.git_opt.clone());
+        args.append(&mut opt.opt_git.clone());
 
         let cmd = CmdGit::get_cmd(&opt, &args)?;
 
@@ -45,11 +45,11 @@ impl CmdGit {
             eprintln!("Call : {}", cmd);
         }
 
-        let output: Result<Output> = Command::new(&opt.git_bin)
+        let output: Result<Output> = Command::new(&opt.bin_git)
             .args(&args)
             .current_dir(&opt.dir)
             .output()
-            .or_else(|x| Err(ErrorKind::GitNotFound(opt.git_bin.clone(), x).into()));
+            .or_else(|x| Err(ErrorKind::GitNotFound(opt.bin_git.clone(), x).into()));
         let output = output?;
 
         if !output.status.success() {
@@ -70,7 +70,7 @@ impl CmdGit {
 
     pub fn lfs_ls_files(opt: &Opt) -> Result<Vec<String>> {
         let mut args = vec![String::from("lfs"), String::from("ls-files")];
-        args.append(&mut opt.git_lfs_opt.clone());
+        args.append(&mut opt.opt_git_lfs.clone());
 
         let cmd = CmdGit::get_cmd(&opt, &args)?;
 
@@ -78,11 +78,11 @@ impl CmdGit {
             eprintln!("Call : {}", cmd);
         }
 
-        let output: Result<Output> = Command::new(&opt.git_bin)
+        let output: Result<Output> = Command::new(&opt.bin_git)
             .args(&args)
             .current_dir(&opt.dir)
             .output()
-            .or_else(|x| Err(ErrorKind::GitNotFound(opt.git_bin.clone(), x).into()));
+            .or_else(|x| Err(ErrorKind::GitNotFound(opt.bin_git.clone(), x).into()));
         let output = output?;
 
         if !output.status.success() {
@@ -119,11 +119,11 @@ impl CmdGit {
             eprintln!("Call : {}", cmd);
         }
 
-        let output: Result<Output> = Command::new(&opt.git_bin)
+        let output: Result<Output> = Command::new(&opt.bin_git)
             .args(&args)
             .current_dir(&opt.dir)
             .output()
-            .or_else(|x| Err(ErrorKind::GitNotFound(opt.git_bin.clone(), x).into()));
+            .or_else(|x| Err(ErrorKind::GitNotFound(opt.bin_git.clone(), x).into()));
         let output = output?;
 
         if !output.status.success() {
@@ -146,11 +146,11 @@ impl CmdGit {
             eprintln!("Call : {}", cmd);
         }
 
-        let output: Result<Output> = Command::new(&opt.git_bin)
+        let output: Result<Output> = Command::new(&opt.bin_git)
             .args(&args)
             .current_dir(&opt.dir)
             .output()
-            .or_else(|x| Err(ErrorKind::GitNotFound(opt.git_bin.clone(), x).into()));
+            .or_else(|x| Err(ErrorKind::GitNotFound(opt.bin_git.clone(), x).into()));
         let output = output?;
 
         if !output.status.success() {
@@ -165,7 +165,7 @@ impl CmdGit {
     }
 
     fn get_cmd(opt: &Opt, args: &Vec<String>) -> Result<String> {
-        let mut cmd = format!("{}", opt.git_bin.to_string_lossy());
+        let mut cmd = format!("{}", opt.bin_git.to_string_lossy());
         for arg in args {
             cmd = format!("{} {}", cmd, arg);
         }
@@ -219,7 +219,7 @@ mod tests {
 
     #[test]
     fn test_ls_files_fail() {
-        let args = vec!["ptags", "--git-bin", "aaa"];
+        let args = vec!["ptags", "--bin-git", "aaa"];
         let opt = Opt::from_iter(args.iter());
         let files = CmdGit::ls_files(&opt);
         assert_eq!(format!("{:?}", files), "Err(Error(GitNotFound(\"aaa\", Error { repr: Os { code: 2, message: \"No such file or directory\" } }), State { next_error: None, backtrace: None }))");

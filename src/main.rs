@@ -26,34 +26,48 @@ use time::PreciseTime;
 #[derive(StructOpt, Debug)]
 #[structopt(name = "ptags")]
 pub struct Opt {
+    /// Number of threads
     #[structopt(short = "t", long = "thread", default_value = "8")] thread: usize,
 
+    /// Output filename
     #[structopt(short = "f", long = "file", default_value = "tags", parse(from_os_str))]
     output: PathBuf,
 
+    /// Search directory
     #[structopt(name = "DIR", default_value = ".", parse(from_os_str))] dir: PathBuf,
 
+    /// Show statistics
     #[structopt(short = "s", long = "stat")] stat: bool,
 
-    #[structopt(long = "ctags-bin", default_value = "ctags", parse(from_os_str))]
-    ctags_bin: PathBuf,
+    /// Path to ctags binary
+    #[structopt(long = "bin-ctags", default_value = "ctags", parse(from_os_str))]
+    bin_ctags: PathBuf,
 
-    #[structopt(long = "git-bin", default_value = "git", parse(from_os_str))] git_bin: PathBuf,
+    /// Path to git binary
+    #[structopt(long = "bin-git", default_value = "git", parse(from_os_str))] bin_git: PathBuf,
 
-    #[structopt(short = "c", long = "ctags-opt")] ctags_opt: Vec<String>,
+    /// Options passed to ctags
+    #[structopt(short = "c", long = "opt-ctags")] opt_ctags: Vec<String>,
 
-    #[structopt(short = "g", long = "git-opt")] git_opt: Vec<String>,
+    /// Options passed to git
+    #[structopt(short = "g", long = "opt-git")] opt_git: Vec<String>,
 
-    #[structopt(long = "git-lfs-opt")] git_lfs_opt: Vec<String>,
+    /// Options passed to git-lfs
+    #[structopt(long = "opt-git-lfs")] opt_git_lfs: Vec<String>,
 
+    /// Verbose mode
     #[structopt(short = "v", long = "verbose")] verbose: bool,
 
+    /// Exclude git-lfs tracked files
     #[structopt(long = "exclude-lfs")] exclude_lfs: bool,
 
+    /// Include untracked files
     #[structopt(long = "include-untracked")] include_untracked: bool,
 
+    /// Include ignored files
     #[structopt(long = "include-ignored")] include_ignored: bool,
 
+    /// Include submodule files
     #[structopt(long = "include-submodule")] include_submodule: bool,
 
 }
