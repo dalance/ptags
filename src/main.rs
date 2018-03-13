@@ -70,6 +70,8 @@ pub struct Opt {
     /// Include submodule files
     #[structopt(long = "include-submodule")] include_submodule: bool,
 
+    /// Validate UTF8 sequence of tag file
+    #[structopt(long = "validate-utf8")] validate_utf8: bool,
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -134,7 +136,11 @@ fn write_tags(opt: &Opt, outputs: &Vec<Output>) -> Result<()> {
     let mut iters = Vec::new();
     let mut lines = Vec::new();
     for o in outputs {
-        let mut iter = str::from_utf8(&o.stdout)?.lines();
+        let mut iter = if opt.validate_utf8 {
+            str::from_utf8(&o.stdout)?.lines()
+        } else {
+            unsafe { str::from_utf8_unchecked(&o.stdout).lines() }
+        };
         lines.push(iter.next());
         iters.push(iter);
     }
