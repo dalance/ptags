@@ -61,7 +61,8 @@ impl CmdCtags {
                     .current_dir(dir)
                     .stdin(Stdio::piped())
                     .stdout(Stdio::piped())
-                    .stderr(Stdio::piped())
+                    //.stderr(Stdio::piped()) // Stdio::piped is too slow( 5s -> 10s )
+                    .stderr(Stdio::null())
                     .spawn();
                 match child {
                     Ok(mut x) => {
