@@ -72,14 +72,16 @@ ptags -c='--exclude=aaa/*' -c='--exclude=bbb/*'
 - OS : CentOS 7.4.1708
 
 ### Data
-- https://github.com/torvalds/linux ( revision:071e31e254e0, 52998files, 2.2GB )
+- source1: https://github.com/llvm-mirror/llvm ( revision:ddf9edb4020, 29670files, 1.2GB )
+- source2: https://github.com/torvalds/linux ( revision:071e31e254e0, 52998files, 2.2GB )
+- source3: https://github.com/chromium/chromium ( revision:ddf9edb4020, 29670files, 1.2GB )
 
 ### Result
 
 **ptags** is about x4 faster than universal-ctags.
 
-| Command       | Version                         | Averaged time ( 10 times execution )  | Speed-up |
-| ------------- | ------------------------------- | ------------------------------------- | -------- |
-| `ctags -R`    | Universal Ctags 0.0.0(f9e6e3c1) | 23.64s                                | x1       |
-| `ptags -t 16` | ptags 0.1.0                     | 5.94s                                 | x3.98    |
+| Command       | Version                         | source1           | source2              |
+| ------------- | ------------------------------- | ----------------- | -------------------- |
+| `ctags -R`    | Universal Ctags 0.0.0(f9e6e3c1) | 3.42s ( x1 )      | 23.64s ( x1 )        |
+| `ptags -t 16` | ptags 0.1.0                     | 0.78s ( x4.38 )   | 5.94s  ( x3.98 )     |
 
