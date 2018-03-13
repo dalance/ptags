@@ -21,7 +21,7 @@ error_chain! {
         CtagsFailed(cmd: String, err: String) {
             display("ctags failed: {}\n{}", cmd, err)
         }
-        CtagsNotFound(path: PathBuf, err: ::std::io::Error) {
+        CommandFailed(path: PathBuf, err: ::std::io::Error) {
             display("ctags command \"{}\" failed: {}", path.to_string_lossy(), err)
         }
     }
@@ -87,7 +87,7 @@ impl CmdCtags {
         let mut outputs = Vec::new();
         for child in children {
             let child: Result<Child> =
-                child?.or_else(|x| Err(ErrorKind::CtagsNotFound(opt.bin_ctags.clone(), x).into()));
+                child?.or_else(|x| Err(ErrorKind::CommandFailed(opt.bin_ctags.clone(), x).into()));
             let output = child?.wait_with_output()?;
 
             if !output.status.success() {
@@ -149,7 +149,7 @@ mod tests {
         let opt = Opt::from_iter(args.iter());
         let files = git_files(&opt).unwrap();
         let outputs = CmdCtags::call(&opt, &files);
-        assert_eq!(format!("{:?}", outputs), "Err(Error(CtagsNotFound(\"aaa\", Error { repr: Os { code: 2, message: \"No such file or directory\" } }), State { next_error: None, backtrace: None }))");
+        assert_eq!(format!("{:?}", outputs), "Err(Error(CommandFailed(\"aaa\", Error { repr: Os { code: 2, message: \"No such file or directory\" } }), State { next_error: None, backtrace: None }))");
     }
 
     #[test]
