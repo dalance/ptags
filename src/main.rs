@@ -44,6 +44,8 @@ pub struct Opt {
 
     #[structopt(short = "g", long = "git-opt")] git_opt: Vec<String>,
 
+    #[structopt(long = "git-lfs-opt")] git_lfs_opt: Vec<String>,
+
     #[structopt(short = "v", long = "verbose")] verbose: bool,
 
     #[structopt(long = "exclude-lfs")] exclude_lfs: bool,
@@ -86,7 +88,17 @@ macro_rules! watch_time (
 );
 
 fn git_files(opt: &Opt) -> Result<Vec<String>> {
-    let list = CmdGit::ls_files(&opt)?;
+    let mut list = CmdGit::ls_files(&opt)?;
+    if opt.exclude_lfs {
+        let lfs_list = CmdGit::lfs_ls_files(&opt)?;
+        let mut new_list = Vec::new();
+        for l in list {
+            if !lfs_list.contains(&l) {
+                new_list.push(l);
+            }
+        }
+        list = new_list;
+    }
     let mut files = vec![String::from(""); opt.thread];
 
     for (i, f) in list.iter().enumerate() {

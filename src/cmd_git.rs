@@ -29,30 +29,24 @@ pub struct CmdGit;
 
 impl CmdGit {
     pub fn ls_files(opt: &Opt) -> Result<Vec<String>> {
-        let mut git_opt = opt.git_opt.clone();
-        git_opt.push(String::from("--cached"));
-        git_opt.push(String::from("--exclude-standard"));
+        let mut args = vec![String::from("ls-files")];
+        args.push(String::from("--cached"));
+        args.push(String::from("--exclude-standard"));
         if opt.include_submodule {
-            git_opt.push(String::from("--recurse-submodules"));
+            args.push(String::from("--recurse-submodules"));
         } else if opt.include_untracked {
-            git_opt.push(String::from("--other"));
+            args.push(String::from("--other"));
         }
+        args.append(&mut opt.git_opt.clone());
 
-        let mut git_cmd = format!(
-            "{} ls-files ",
-            opt.git_bin.to_string_lossy()
-        );
-        for o in &git_opt {
-            git_cmd = format!("{} {}", git_cmd, o);
-        }
-        git_cmd = format!("{} {}", git_cmd, opt.dir.to_string_lossy());
+        let cmd = CmdGit::get_cmd(&opt, &args)?;
+
         if opt.verbose {
-            eprintln!("Call : {}", git_cmd);
+            eprintln!("Call : {}", cmd);
         }
 
         let output: Result<Output> = Command::new(&opt.git_bin)
-            .arg("ls-files")
-            .args(&git_opt)
+            .args(&args)
             .current_dir(&opt.dir)
             .output()
             .or_else(|x| Err(ErrorKind::GitNotFound(opt.git_bin.clone(), x).into()));
@@ -60,7 +54,7 @@ impl CmdGit {
 
         if !output.status.success() {
             bail!(ErrorKind::GitLsFailed(
-                git_cmd,
+                cmd,
                 String::from(str::from_utf8(&output.stderr)?)
             ));
         }
@@ -72,6 +66,110 @@ impl CmdGit {
         }
         ret.sort();
         Ok(ret)
+    }
+
+    pub fn lfs_ls_files(opt: &Opt) -> Result<Vec<String>> {
+        let mut args = vec![String::from("lfs"), String::from("ls-files")];
+        args.append(&mut opt.git_lfs_opt.clone());
+
+        let cmd = CmdGit::get_cmd(&opt, &args)?;
+
+        if opt.verbose {
+            eprintln!("Call : {}", cmd);
+        }
+
+        let output: Result<Output> = Command::new(&opt.git_bin)
+            .args(&args)
+            .current_dir(&opt.dir)
+            .output()
+            .or_else(|x| Err(ErrorKind::GitNotFound(opt.git_bin.clone(), x).into()));
+        let output = output?;
+
+        if !output.status.success() {
+            bail!(ErrorKind::GitLsFailed(
+                cmd,
+                String::from(str::from_utf8(&output.stderr)?)
+            ));
+        }
+
+        let cdup = CmdGit::show_cdup(&opt)?;
+        let prefix = CmdGit::show_prefix(&opt)?;
+
+        let list = str::from_utf8(&output.stdout)?.lines();
+        let mut ret = Vec::new();
+        for l in list {
+            let mut path = String::from(l.split(" - ").nth(1).unwrap_or(""));
+            if path.starts_with(&prefix) {
+                path = path.replace(&prefix, "");
+            } else {
+                path = format!("{}{}", cdup, path);
+            }
+            ret.push(path);
+        }
+        ret.sort();
+        Ok(ret)
+    }
+
+    fn show_cdup(opt: &Opt) -> Result<String> {
+        let args = vec![String::from("rev-parse"), String::from("--show-cdup")];
+
+        let cmd = CmdGit::get_cmd(&opt, &args)?;
+
+        if opt.verbose {
+            eprintln!("Call : {}", cmd);
+        }
+
+        let output: Result<Output> = Command::new(&opt.git_bin)
+            .args(&args)
+            .current_dir(&opt.dir)
+            .output()
+            .or_else(|x| Err(ErrorKind::GitNotFound(opt.git_bin.clone(), x).into()));
+        let output = output?;
+
+        if !output.status.success() {
+            bail!(ErrorKind::GitLsFailed(
+                cmd,
+                String::from(str::from_utf8(&output.stderr)?)
+            ));
+        }
+
+        let mut list = str::from_utf8(&output.stdout)?.lines();
+        Ok(String::from(list.next().unwrap_or("")))
+    }
+
+    fn show_prefix(opt: &Opt) -> Result<String> {
+        let args = vec![String::from("rev-parse"), String::from("--show-prefix")];
+
+        let cmd = CmdGit::get_cmd(&opt, &args)?;
+
+        if opt.verbose {
+            eprintln!("Call : {}", cmd);
+        }
+
+        let output: Result<Output> = Command::new(&opt.git_bin)
+            .args(&args)
+            .current_dir(&opt.dir)
+            .output()
+            .or_else(|x| Err(ErrorKind::GitNotFound(opt.git_bin.clone(), x).into()));
+        let output = output?;
+
+        if !output.status.success() {
+            bail!(ErrorKind::GitLsFailed(
+                cmd,
+                String::from(str::from_utf8(&output.stderr)?)
+            ));
+        }
+
+        let mut list = str::from_utf8(&output.stdout)?.lines();
+        Ok(String::from(list.next().unwrap_or("")))
+    }
+
+    fn get_cmd(opt: &Opt, args: &Vec<String>) -> Result<String> {
+        let mut cmd = format!("{}", opt.git_bin.to_string_lossy());
+        for arg in args {
+            cmd = format!("{} {}", cmd, arg);
+        }
+        Ok(cmd)
     }
 }
 
@@ -87,7 +185,7 @@ mod tests {
 
     #[test]
     fn test_ls_files() {
-        let args = vec!["ptags", "-t", "9"];
+        let args = vec!["ptags"];
         let opt = Opt::from_iter(args.iter());
         let files = CmdGit::ls_files(&opt).unwrap();
         assert_eq!(
@@ -105,6 +203,17 @@ mod tests {
                 "src/cmd_git.rs",
                 "src/main.rs",
             ]
+        );
+    }
+
+    #[test]
+    fn test_lfs_ls_files() {
+        let args = vec!["ptags"];
+        let opt = Opt::from_iter(args.iter());
+        let files = CmdGit::lfs_ls_files(&opt).unwrap();
+        assert_eq!(
+            files,
+            Vec::<String>::new()
         );
     }
 
