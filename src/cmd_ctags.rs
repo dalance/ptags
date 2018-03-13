@@ -1,5 +1,5 @@
 use std::path::PathBuf;
-use std::process::{Child, Command, Output, Stdio};
+use std::process::{Command, Output, Stdio};
 use std::str;
 use std::io::{BufReader, Read, Write};
 use std::thread;
@@ -40,7 +40,7 @@ impl CmdCtags {
             ctags_cmd = format!("{} {}", ctags_cmd, o);
         }
 
-        let (tx, rx) = mpsc::channel();
+        let (tx, rx) = mpsc::channel::<Result<Output>>();
 
         for i in 0..opt.thread {
             let tx = tx.clone();
@@ -54,7 +54,7 @@ impl CmdCtags {
             }
 
             thread::spawn(move || {
-                let child = Command::new(bin_ctags)
+                let child = Command::new(bin_ctags.clone())
                     .arg("-L -")
                     .arg("-f -")
                     .args(opt_ctags)
@@ -70,10 +70,13 @@ impl CmdCtags {
                             let stdin = x.stdin.as_mut().unwrap();
                             let _ = stdin.write(file.as_bytes());
                         }
-                        let _ = tx.send(Ok(x));
+                        match x.wait_with_output() {
+                            Ok( mut x ) => { let _ = tx.send(Ok(x)); },
+                            Err( x ) => { let _ = tx.send(Err(x.into())); },
+                        }
                     }
                     Err(x) => {
-                        let _ = tx.send(Err(x));
+                        let _ = tx.send(Err(ErrorKind::CommandFailed(bin_ctags.clone(), x).into()));
                     }
                 }
             });
@@ -86,9 +89,7 @@ impl CmdCtags {
 
         let mut outputs = Vec::new();
         for child in children {
-            let child: Result<Child> =
-                child?.or_else(|x| Err(ErrorKind::CommandFailed(opt.bin_ctags.clone(), x).into()));
-            let output = child?.wait_with_output()?;
+            let output = child??;
 
             if !output.status.success() {
                 bail!(ErrorKind::CtagsFailed(

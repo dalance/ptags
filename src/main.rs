@@ -6,7 +6,6 @@ extern crate tempfile;
 extern crate time;
 
 mod cmd_git;
-//mod cmd_git_lfs;
 mod cmd_ctags;
 
 use cmd_ctags::CmdCtags;
@@ -150,15 +149,15 @@ fn write_tags(opt: &Opt, outputs: &Vec<Output>) -> Result<()> {
     f.write(get_tags_header(&opt)?.as_bytes())?;
 
     while lines.iter().any(|x| x.is_some()) {
-        let (mut min_index, mut min_line) = (0, lines[0]);
+        let mut min = 0;
         for i in 0..lines.len() {
-            if !lines[i].is_none() && (min_line.is_none() || lines[i] < min_line) {
-                min_index = i;
-                min_line = lines[i];
+            if !lines[i].is_none() && (lines[min].is_none() || lines[i] < lines[min]) {
+                min = i;
             }
         }
-        lines[min_index] = iters[min_index].next();
-        f.write(format!("{}\n", min_line.unwrap_or("")).as_bytes())?;
+        f.write(lines[min].unwrap_or("").as_bytes())?;
+        f.write("\n".as_bytes())?;
+        lines[min] = iters[min].next();
     }
 
     Ok(())
