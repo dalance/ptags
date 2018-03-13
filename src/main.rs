@@ -42,6 +42,15 @@ struct Opt {
     #[structopt(short = "g", long = "git-opt")] git_opt: Vec<String>,
 
     #[structopt(short = "v", long = "verbose")] verbose: bool,
+
+    #[structopt(long = "exclude-lfs")] exclude_lfs: bool,
+
+    #[structopt(long = "include-untracked")] include_untracked: bool,
+
+    #[structopt(long = "include-ignored")] include_ignored: bool,
+
+    #[structopt(long = "include-submodule")] include_submodule: bool,
+
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -85,11 +94,20 @@ macro_rules! watch_time (
 );
 
 fn git_files(opt: &Opt) -> Result<Vec<String>> {
+    let mut git_opt = opt.git_opt.clone();
+    git_opt.push(String::from("--cached"));
+    git_opt.push(String::from("--exclude-standard"));
+    if opt.include_submodule {
+        git_opt.push(String::from("--recurse-submodules"));
+    } else if opt.include_untracked {
+        git_opt.push(String::from("--other"));
+    }
+
     let mut git_cmd = format!(
-        "{} ls-files --cached --other --exclude-standard ",
+        "{} ls-files ",
         opt.git_bin.to_string_lossy()
     );
-    for o in &opt.git_opt {
+    for o in &git_opt {
         git_cmd = format!("{} {}", git_cmd, o);
     }
     git_cmd = format!("{} {}", git_cmd, opt.dir.to_string_lossy());
@@ -99,10 +117,7 @@ fn git_files(opt: &Opt) -> Result<Vec<String>> {
 
     let output: Result<Output> = Command::new(&opt.git_bin)
         .arg("ls-files")
-        .arg("--cached")
-        .arg("--other")
-        .arg("--exclude-standard")
-        .args(&opt.git_opt)
+        .args(&git_opt)
         .current_dir(&opt.dir)
         .output()
         .or_else(|x| Err(ErrorKind::GitNotFound(opt.git_bin.clone(), x).into()));
