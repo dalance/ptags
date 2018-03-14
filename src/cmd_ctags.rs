@@ -135,6 +135,15 @@ impl CmdCtags {
         }
         Ok(cmd)
     }
+
+    #[allow(dead_code)]
+    fn is_exuberant_ctags(opt: &Opt) -> Result<bool> {
+        let output = Command::new(&opt.bin_ctags)
+            .arg("--version")
+            .current_dir(&opt.dir)
+            .output()?;
+        Ok(str::from_utf8(&output.stdout)?.starts_with("Exuberant Ctags"))
+    }
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -181,10 +190,18 @@ mod tests {
         let files = git_files(&opt).unwrap();
         let outputs = CmdCtags::call(&opt, &files).unwrap();
         let mut iter = str::from_utf8(&outputs[0].stdout).unwrap().lines();
-        assert_eq!(
-            iter.next().unwrap_or(""),
-            "CmdCtags\tsrc/cmd_ctags.rs\t/^impl CmdCtags {$/;\"\tc"
-        );
+        // Exuberant Ctags doesn't support Rust ( *.rs )
+        if CmdCtags::is_exuberant_ctags(&opt).unwrap() {
+            assert_eq!(
+                iter.next().unwrap_or(""),
+                ""
+            );
+        } else {
+            assert_eq!(
+                iter.next().unwrap_or(""),
+                "CmdCtags\tsrc/cmd_ctags.rs\t/^impl CmdCtags {$/;\"\tc"
+            );
+        }
     }
 
     #[test]
