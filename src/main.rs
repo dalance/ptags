@@ -224,9 +224,10 @@ mod tests {
 
     #[test]
     fn test_run() {
-        let ret = run();
+        let args = vec!["ptags"];
+        let opt = Opt::from_iter(args.iter());
+        let ret = run_opt(&opt);
         assert!(ret.is_ok());
-        assert_eq!(format!("{:?}", ret), "Ok(())");
     }
 
     #[test]
@@ -235,6 +236,5 @@ mod tests {
         let opt = Opt::from_iter(args.iter());
         let ret = run_opt(&opt);
         assert!(ret.is_ok());
-        assert_eq!(format!("{:?}", ret), "Ok(())");
     }
 }
