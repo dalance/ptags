@@ -167,6 +167,7 @@ mod tests {
             files,
             vec![
                 ".cargo/config",
+                ".gitattributes",
                 ".gitignore",
                 ".travis.yml",
                 "Cargo.lock",
@@ -180,6 +181,7 @@ mod tests {
                 "src/cmd_git.rs",
                 "src/lib.rs",
                 "src/main.rs",
+                "test/lfs.txt",
             ]
         );
     }
@@ -193,6 +195,7 @@ mod tests {
             files,
             vec![
                 ".cargo/config",
+                ".gitattributes",
                 ".gitignore",
                 ".travis.yml",
                 "Cargo.lock",
@@ -219,6 +222,7 @@ mod tests {
             files,
             vec![
                 ".cargo/config",
+                ".gitattributes",
                 ".gitignore",
                 ".travis.yml",
                 "Cargo.lock",
@@ -232,6 +236,7 @@ mod tests {
                 "src/cmd_git.rs",
                 "src/lib.rs",
                 "src/main.rs",
+                "test/lfs.txt",
             ]
         );
     }
@@ -249,6 +254,7 @@ mod tests {
             files,
             vec![
                 ".cargo/config",
+                ".gitattributes",
                 ".gitignore",
                 ".travis.yml",
                 "Cargo.lock",
@@ -262,6 +268,7 @@ mod tests {
                 "src/cmd_git.rs",
                 "src/lib.rs",
                 "src/main.rs",
+                "test/lfs.txt",
                 "tmp",
             ]
         );
