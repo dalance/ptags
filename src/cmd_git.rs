@@ -169,6 +169,7 @@ mod tests {
                 ".cargo/config",
                 ".gitattributes",
                 ".gitignore",
+                ".gitmodules",
                 ".travis.yml",
                 "Cargo.lock",
                 "Cargo.toml",
@@ -182,6 +183,7 @@ mod tests {
                 "src/lib.rs",
                 "src/main.rs",
                 "test/lfs.txt",
+                "test/ptags_test",
             ]
         );
     }
@@ -197,6 +199,7 @@ mod tests {
                 ".cargo/config",
                 ".gitattributes",
                 ".gitignore",
+                ".gitmodules",
                 ".travis.yml",
                 "Cargo.lock",
                 "Cargo.toml",
@@ -209,6 +212,7 @@ mod tests {
                 "src/cmd_git.rs",
                 "src/lib.rs",
                 "src/main.rs",
+                "test/ptags_test",
             ]
         );
     }
@@ -224,6 +228,7 @@ mod tests {
                 ".cargo/config",
                 ".gitattributes",
                 ".gitignore",
+                ".gitmodules",
                 ".travis.yml",
                 "Cargo.lock",
                 "Cargo.toml",
@@ -237,6 +242,7 @@ mod tests {
                 "src/lib.rs",
                 "src/main.rs",
                 "test/lfs.txt",
+                "test/ptags_test/README.md",
             ]
         );
     }
@@ -250,12 +256,14 @@ mod tests {
         let args = vec!["ptags", "--include-untracked"];
         let opt = Opt::from_iter(args.iter());
         let files = CmdGit::get_files(&opt).unwrap();
+        let _ = fs::remove_file("tmp");
         assert_eq!(
             files,
             vec![
                 ".cargo/config",
                 ".gitattributes",
                 ".gitignore",
+                ".gitmodules",
                 ".travis.yml",
                 "Cargo.lock",
                 "Cargo.toml",
@@ -269,10 +277,10 @@ mod tests {
                 "src/lib.rs",
                 "src/main.rs",
                 "test/lfs.txt",
+                "test/ptags_test",
                 "tmp",
             ]
         );
-        let _ = fs::remove_file("tmp");
     }
 
     #[test]
