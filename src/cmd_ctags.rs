@@ -61,7 +61,7 @@ impl CmdCtags {
                     .current_dir(dir)
                     .stdin(Stdio::piped())
                     .stdout(Stdio::piped())
-                    //.stderr(Stdio::piped()) // Stdio::piped is too slow( 5s -> 10s )
+                    //.stderr(Stdio::piped()) // Stdio::piped is x2 slow to wait_with_output() completion
                     .stderr(Stdio::null())
                     .spawn();
                 match child {
