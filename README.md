@@ -25,10 +25,11 @@ cargo install ptags
 **ptags** uses `ctags` and `git` command internally.
 The tested version is below.
 
-| Command | Version                                               |
-| ------- | ----------------------------------------------------- |
-| `ctags` | Universal Ctags 0.0.0(f9e6e3c1) / Exuberant Ctags 5.8 |
-| `git`   | git version 2.14.2                                    |
+| Command   | Version                                               |
+| --------- | ----------------------------------------------------- |
+| `ctags`   | Universal Ctags 0.0.0(f9e6e3c1) / Exuberant Ctags 5.8 |
+| `git`     | git version 2.14.2                                    |
+| `git-lfs` | git-lfs/2.3.3                                         |
 
 ## Usage
 
@@ -80,6 +81,7 @@ ptags -c='--exclude=aaa/*' -c='--exclude=bbb/*'
 
 | Name    | Repository                           | Revision     | Files  | Size[GB] |
 | ------- | ------------------------------------ | ------------ | ------ | -------- |
+| source0 | https://github.com/neovim/neovim     | f5b0f5e17    | 2370   | 0.1      |
 | source1 | https://github.com/llvm-mirror/llvm  | ddf9edb4020  | 29670  | 1.2      |
 | source2 | https://github.com/torvalds/linux    | 071e31e254e0 | 52998  | 2.2      |
 | source3 | https://github.com/chromium/chromium | d79c68510b7e | 293205 | 13       |
@@ -88,8 +90,8 @@ ptags -c='--exclude=aaa/*' -c='--exclude=bbb/*'
 
 **ptags** is about x5 faster than universal-ctags.
 
-| Command       | Version                         | source1         | source2          | source3         |
-| ------------- | ------------------------------- | --------------- | ---------------- | --------------- |
-| `ctags -R`    | Universal Ctags 0.0.0(f9e6e3c1) | 3.42s ( x1 )    | 23.64s ( x1 )    | 32.23 ( x1 )    |
-| `ptags -t 16` | ptags 0.1.4                     | 0.58s ( x5.90 ) | 4.24s  ( x5.58 ) | 7.27s ( x4.43 ) |
+| Command       | Version                         | source0         | source1         | source2          | source3         |
+| ------------- | ------------------------------- | --------------- | --------------- | ---------------- | --------------- |
+| `ctags -R`    | Universal Ctags 0.0.0(f9e6e3c1) | 0.41s ( x1 )    | 3.42s ( x1 )    | 23.64s ( x1 )    | 32.23 ( x1 )    |
+| `ptags -t 16` | ptags 0.1.4                     | 0.13s ( x3.15 ) | 0.58s ( x5.90 ) | 4.24s  ( x5.58 ) | 7.27s ( x4.43 ) |
 
