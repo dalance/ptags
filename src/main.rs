@@ -116,21 +116,12 @@ macro_rules! watch_time (
 );
 
 fn git_files(opt: &Opt) -> Result<Vec<String>> {
-    let mut list = CmdGit::ls_files(&opt)?;
-    if opt.exclude_lfs {
-        let lfs_list = CmdGit::lfs_ls_files(&opt)?;
-        let mut new_list = Vec::new();
-        for l in list {
-            if !lfs_list.contains(&l) {
-                new_list.push(l);
-            }
-        }
-        list = new_list;
-    }
+    let list = CmdGit::get_files(&opt)?;
     let mut files = vec![String::from(""); opt.thread];
 
     for (i, f) in list.iter().enumerate() {
-        files[i % opt.thread].push_str(&format!("{}\n", f));
+        files[i % opt.thread].push_str(f);
+        files[i % opt.thread].push_str("\n");
     }
 
     Ok(files)
@@ -163,12 +154,12 @@ fn write_tags(opt: &Opt, outputs: &[Output]) -> Result<()> {
 
     while lines.iter().any(|x| x.is_some()) {
         let mut min = 0;
-        for i in 0..lines.len() {
-            if !lines[i].is_none() && (lines[min].is_none() || lines[i] < lines[min]) {
+        for i in 1..lines.len() {
+            if !lines[i].is_none() && (lines[min].is_none() || lines[i].unwrap() < lines[min].unwrap()) {
                 min = i;
             }
         }
-        f.write(lines[min].unwrap_or("").as_bytes())?;
+        f.write(lines[min].unwrap().as_bytes())?;
         f.write("\n".as_bytes())?;
         lines[min] = iters[min].next();
     }

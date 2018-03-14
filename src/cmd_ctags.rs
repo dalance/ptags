@@ -19,9 +19,11 @@ error_chain! {
     }
     errors {
         CtagsFailed(cmd: String, err: String) {
+            description("ctags failed")
             display("ctags failed: {}\n{}", cmd, err)
         }
         CommandFailed(path: PathBuf, err: ::std::io::Error) {
+            description("ctags command failed")
             display("ctags command \"{}\" failed: {}", path.to_string_lossy(), err)
         }
     }

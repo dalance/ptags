@@ -13,10 +13,12 @@ error_chain! {
     }
     errors {
         GitFailed(cmd: String, err: String) {
+            description("git failed")
             display("git failed: {}\n{}", cmd, err)
         }
         CommandFailed(path: PathBuf, err: ::std::io::Error) {
-            display("command \"{}\" failed: {}", path.to_string_lossy(), err)
+            description("git command failed")
+            display("git command \"{}\" failed: {}", path.to_string_lossy(), err)
         }
     }
 }
@@ -28,6 +30,21 @@ error_chain! {
 pub struct CmdGit;
 
 impl CmdGit {
+    pub fn get_files(opt: &Opt) -> Result<Vec<String>> {
+        let mut list = CmdGit::ls_files(&opt)?;
+        if opt.exclude_lfs {
+            let lfs_list = CmdGit::lfs_ls_files(&opt)?;
+            let mut new_list = Vec::new();
+            for l in list {
+                if !lfs_list.contains(&l) {
+                    new_list.push(l);
+                }
+            }
+            list = new_list;
+        }
+        Ok(list)
+    }
+
     fn call(opt: &Opt, args: &[String]) -> Result<Output> {
         let cmd = CmdGit::get_cmd(&opt, &args)?;
         if opt.verbose {
@@ -51,7 +68,7 @@ impl CmdGit {
         Ok(output)
     }
 
-    pub fn ls_files(opt: &Opt) -> Result<Vec<String>> {
+    fn ls_files(opt: &Opt) -> Result<Vec<String>> {
         let mut args = vec![String::from("ls-files")];
         args.push(String::from("--cached"));
         args.push(String::from("--exclude-standard"));
@@ -70,10 +87,15 @@ impl CmdGit {
             ret.push(String::from(l));
         }
         ret.sort();
+
+        if opt.verbose {
+            eprintln!("Files: {}", ret.len());
+        }
+
         Ok(ret)
     }
 
-    pub fn lfs_ls_files(opt: &Opt) -> Result<Vec<String>> {
+    fn lfs_ls_files(opt: &Opt) -> Result<Vec<String>> {
         let mut args = vec![String::from("lfs"), String::from("ls-files")];
         args.append(&mut opt.opt_git_lfs.clone());
 
