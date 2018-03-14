@@ -1,0 +1,3 @@
+[submodule "test/ptags_test"]
+	path = test/ptags_test
+	url = https://github.com/dalance/ptags_test.git
