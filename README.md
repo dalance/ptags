@@ -10,7 +10,7 @@ A parallel [universal-ctags](https://ctags.io) wrapper for git repository
 **ptags** is a [universal-ctags](https://ctags.io) wrapper to have the following features.
 - Search git tracked files only ( `.gitignore` support )
 - Call `ctags` command in parallel for acceleration
-    - About x5 faster than universal-ctags at large repository
+    - Up to x5 faster than universal-ctags
 
 ## Install
 Download from [release page](https://github.com/dalance/ptags/releases/latest), and extract to the directory in PATH.
@@ -35,7 +35,7 @@ The tested version is below.
 ## Usage
 
 ```
-ptags 0.1.0
+ptags 0.1.5-pre
 dalance@gmail.com
 A parallel universal-ctags wrapper for git repository
 
@@ -49,6 +49,8 @@ FLAGS:
         --include-submodule    Include submodule files
         --include-untracked    Include untracked files
     -s, --stat                 Show statistics
+        --unsorted             Disable tags sort
+        --validate-utf8        Validate UTF8 sequence of tag file
     -V, --version              Prints version information
     -v, --verbose              Verbose mode
 
@@ -89,7 +91,7 @@ ptags -c='--exclude=aaa/*' -c='--exclude=bbb/*'
 
 ### Result
 
-**ptags** is about x5 faster than universal-ctags.
+**ptags** is up to x5 faster than universal-ctags.
 
 | Command       | Version                         | source0         | source1         | source2          | source3         |
 | ------------- | ------------------------------- | --------------- | --------------- | ---------------- | --------------- |
