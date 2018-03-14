@@ -40,6 +40,9 @@ impl CmdCtags {
         let mut args = Vec::new();
         args.push(String::from("-L -"));
         args.push(String::from("-f -"));
+        for e in &opt.exclude {
+            args.push(String::from(format!("--exclude={}", e)));
+        }
         args.append(&mut opt.opt_ctags.clone());
 
         let cmd = CmdCtags::get_cmd(&opt, &args)?;
@@ -153,7 +156,7 @@ mod tests {
         let outputs = CmdCtags::call(&opt, &files).unwrap();
         let mut iter = str::from_utf8(&outputs[0].stdout).unwrap().lines();
         assert_eq!(
-            iter.next().unwrap(),
+            iter.next().unwrap_or(""),
             "BIN_NAME\tMakefile\t/^BIN_NAME = ptags$/;\"\tm"
         );
     }
@@ -166,8 +169,21 @@ mod tests {
         let outputs = CmdCtags::call(&opt, &files).unwrap();
         let mut iter = str::from_utf8(&outputs[0].stdout).unwrap().lines();
         assert_eq!(
-            iter.next().unwrap(),
+            iter.next().unwrap_or(""),
             "VERSION\tMakefile\t/^VERSION = $(patsubst \"%\",%, $(word 3, $(shell grep version Cargo.toml)))$/;\"\tm"
+        );
+    }
+
+    #[test]
+    fn test_call_exclude() {
+        let args = vec!["ptags", "-t", "1", "--exclude=Make*", "-v"];
+        let opt = Opt::from_iter(args.iter());
+        let files = git_files(&opt).unwrap();
+        let outputs = CmdCtags::call(&opt, &files).unwrap();
+        let mut iter = str::from_utf8(&outputs[0].stdout).unwrap().lines();
+        assert_eq!(
+            iter.next().unwrap_or(""),
+            "CmdCtags\tsrc/cmd_ctags.rs\t/^impl CmdCtags {$/;\"\tc"
         );
     }
 
@@ -195,7 +211,7 @@ mod tests {
         let opt = Opt::from_iter(args.iter());
         let output = CmdCtags::get_tags_header(&opt).unwrap();
         assert_eq!(
-            output.lines().next().unwrap(),
+            output.lines().next().unwrap_or(""),
             "!_TAG_FILE_FORMAT\t2\t/extended format; --format=1 will not append ;\" to lines/"
         );
     }

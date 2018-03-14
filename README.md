@@ -35,7 +35,7 @@ The tested version is below.
 ## Usage
 
 ```
-ptags 0.1.5-pre
+ptags 0.1.6-pre
 dalance@gmail.com
 A parallel universal-ctags wrapper for git repository
 
@@ -57,6 +57,7 @@ FLAGS:
 OPTIONS:
         --bin-ctags <bin_ctags>           Path to ctags binary [default: ctags]
         --bin-git <bin_git>               Path to git binary [default: git]
+    -e, --exclude <exclude>...            Glob pattern of exclude file ( ex. --exclude='*.rs' )
     -c, --opt-ctags <opt_ctags>...        Options passed to ctags
     -g, --opt-git <opt_git>...            Options passed to git
         --opt-git-lfs <opt_git_lfs>...    Options passed to git-lfs
@@ -70,7 +71,7 @@ ARGS:
 You can pass options to `ctags` by`-c`/`--ctags_opt` option like below.
 
 ```
-ptags -c='--exclude=aaa/*' -c='--exclude=bbb/*'
+ptags -c=--links=no -c=--languages=Rust
 ```
 
 ## Benchmark

@@ -78,6 +78,10 @@ pub struct Opt {
     /// Disable tags sort
     #[structopt(long = "unsorted")]
     pub unsorted: bool,
+
+    /// Glob pattern of exclude file ( ex. --exclude='*.rs' )
+    #[structopt(short = "e", long = "exclude")]
+    pub exclude: Vec<String>,
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
