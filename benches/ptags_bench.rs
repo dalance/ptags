@@ -4,7 +4,7 @@ extern crate ptagslib;
 extern crate structopt;
 
 use bencher::Bencher;
-use ptagslib::bin::{Opt, run_opt};
+use ptagslib::bin::{run_opt, Opt};
 use structopt::StructOpt;
 
 fn bench_default(bench: &mut Bencher) {

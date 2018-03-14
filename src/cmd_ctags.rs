@@ -192,10 +192,7 @@ mod tests {
         let mut iter = str::from_utf8(&outputs[0].stdout).unwrap().lines();
         // Exuberant Ctags doesn't support Rust ( *.rs )
         if CmdCtags::is_exuberant_ctags(&opt).unwrap() {
-            assert_eq!(
-                iter.next().unwrap_or(""),
-                ""
-            );
+            assert_eq!(iter.next().unwrap_or(""), "");
         } else {
             assert_eq!(
                 iter.next().unwrap_or(""),

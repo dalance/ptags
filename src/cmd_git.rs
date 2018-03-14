@@ -224,13 +224,7 @@ mod tests {
         let files = CmdGit::get_files(&opt).unwrap();
         assert_eq!(
             files,
-            vec![
-                "bin.rs",
-                "cmd_ctags.rs",
-                "cmd_git.rs",
-                "lib.rs",
-                "main.rs",
-            ]
+            vec!["bin.rs", "cmd_ctags.rs", "cmd_git.rs", "lib.rs", "main.rs"]
         );
     }
 
