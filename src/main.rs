@@ -155,7 +155,9 @@ fn write_tags(opt: &Opt, outputs: &[Output]) -> Result<()> {
     while lines.iter().any(|x| x.is_some()) {
         let mut min = 0;
         for i in 1..lines.len() {
-            if !lines[i].is_none() && (lines[min].is_none() || lines[i].unwrap() < lines[min].unwrap()) {
+            if !lines[i].is_none()
+                && (lines[min].is_none() || lines[i].unwrap() < lines[min].unwrap())
+            {
                 min = i;
             }
         }
