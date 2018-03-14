@@ -8,7 +8,7 @@ before_script:
 - if [[ $TRAVIS_OS_NAME == "linux" ]]; then rustup target add x86_64-unknown-linux-musl; fi
 - if [[ $TRAVIS_OS_NAME == "linux" ]]; then rustup target add x86_64-pc-windows-gnu; fi
 - if [[ $TRAVIS_OS_NAME == "linux" ]]; then sudo apt-get -qq update; fi
-- if [[ $TRAVIS_OS_NAME == "linux" ]]; then sudo apt-get -qq install gcc-mingw-w64-x86-64 musl-tools exuberant-ctags libssl-dev; fi
+- if [[ $TRAVIS_OS_NAME == "linux" ]]; then sudo apt-get -qq install gcc-mingw-w64-x86-64 musl-tools universal-ctags libssl-dev; fi
 - if [[ $TRAVIS_OS_NAME == "osx"   ]]; then brew install --HEAD universal-ctags/universal-ctags/universal-ctags; fi
 - if [[ $TRAVIS_OS_NAME == "osx"   ]]; then brew install git-lfs; fi
 - ctags --version
