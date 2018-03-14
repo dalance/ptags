@@ -37,10 +37,12 @@ pub struct CmdCtags;
 
 impl CmdCtags {
     pub fn call(opt: &Opt, files: &[String]) -> Result<Vec<Output>> {
-        let mut ctags_cmd = format!("{} -L - -f - ", opt.bin_ctags.to_string_lossy());
-        for o in &opt.opt_ctags {
-            ctags_cmd = format!("{} {}", ctags_cmd, o);
-        }
+        let mut args = Vec::new();
+        args.push(String::from("-L -"));
+        args.push(String::from("-f -"));
+        args.append(&mut opt.opt_ctags.clone());
+
+        let cmd = CmdCtags::get_cmd(&opt, &args)?;
 
         let (tx, rx) = mpsc::channel::<Result<Output>>();
 
@@ -49,17 +51,15 @@ impl CmdCtags {
             let file = files[i].clone();
             let dir = opt.dir.clone();
             let bin_ctags = opt.bin_ctags.clone();
-            let opt_ctags = opt.opt_ctags.clone();
+            let args = args.clone();
 
             if opt.verbose {
-                eprintln!("Call : {}", ctags_cmd);
+                eprintln!("Call : {}", cmd);
             }
 
             thread::spawn(move || {
                 let child = Command::new(bin_ctags.clone())
-                    .arg("-L -")
-                    .arg("-f -")
-                    .args(opt_ctags)
+                    .args(args)
                     .current_dir(dir)
                     .stdin(Stdio::piped())
                     .stdout(Stdio::piped())
@@ -99,7 +99,7 @@ impl CmdCtags {
 
             if !output.status.success() {
                 bail!(ErrorKind::CtagsFailed(
-                    ctags_cmd,
+                    cmd,
                     String::from(str::from_utf8(&output.stderr)?)
                 ));
             }
@@ -123,6 +123,14 @@ impl CmdCtags {
         let mut s = String::new();
         f.read_to_string(&mut s)?;
         Ok(s)
+    }
+
+    fn get_cmd(opt: &Opt, args: &[String]) -> Result<String> {
+        let mut cmd = format!("{}", opt.bin_ctags.to_string_lossy());
+        for arg in args {
+            cmd = format!("{} {}", cmd, arg);
+        }
+        Ok(cmd)
     }
 }
 
@@ -178,7 +186,7 @@ mod tests {
         let opt = Opt::from_iter(args.iter());
         let files = git_files(&opt).unwrap();
         let outputs = CmdCtags::call(&opt, &files);
-        assert_eq!(format!("{:?}", outputs), "Err(Error(CtagsFailed(\"ctags -L - -f -  --u\", \"\"), State { next_error: None, backtrace: None }))");
+        assert_eq!(format!("{:?}", outputs), "Err(Error(CtagsFailed(\"ctags -L - -f - --u\", \"\"), State { next_error: None, backtrace: None }))");
     }
 
     #[test]

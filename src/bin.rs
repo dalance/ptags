@@ -74,6 +74,10 @@ pub struct Opt {
     /// Validate UTF8 sequence of tag file
     #[structopt(long = "validate-utf8")]
     pub validate_utf8: bool,
+
+    /// Disable tags sort
+    #[structopt(long = "unsorted")]
+    pub unsorted: bool,
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -145,10 +149,16 @@ fn write_tags(opt: &Opt, outputs: &[Output]) -> Result<()> {
     while lines.iter().any(|x| x.is_some()) {
         let mut min = 0;
         for i in 1..lines.len() {
-            if !lines[i].is_none()
-                && (lines[min].is_none() || lines[i].unwrap() < lines[min].unwrap())
-            {
-                min = i;
+            if opt.unsorted {
+                if !lines[i].is_none() && lines[min].is_none() {
+                    min = i;
+                }
+            } else {
+                if !lines[i].is_none()
+                    && (lines[min].is_none() || lines[i].unwrap() < lines[min].unwrap())
+                {
+                    min = i;
+                }
             }
         }
         f.write(lines[min].unwrap().as_bytes())?;
