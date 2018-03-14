@@ -172,8 +172,11 @@ mod tests {
                 "LICENSE",
                 "Makefile",
                 "README.md",
+                "benches/ptags_bench.rs",
+                "src/bin.rs",
                 "src/cmd_ctags.rs",
                 "src/cmd_git.rs",
+                "src/lib.rs",
                 "src/main.rs",
             ]
         );
@@ -195,8 +198,11 @@ mod tests {
                 "LICENSE",
                 "Makefile",
                 "README.md",
+                "benches/ptags_bench.rs",
+                "src/bin.rs",
                 "src/cmd_ctags.rs",
                 "src/cmd_git.rs",
+                "src/lib.rs",
                 "src/main.rs",
             ]
         );
