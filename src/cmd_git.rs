@@ -218,6 +218,23 @@ mod tests {
     }
 
     #[test]
+    fn test_get_files_exclude_lfs_cd() {
+        let args = vec!["ptags", "--exclude-lfs", "src"];
+        let opt = Opt::from_iter(args.iter());
+        let files = CmdGit::get_files(&opt).unwrap();
+        assert_eq!(
+            files,
+            vec![
+                "bin.rs",
+                "cmd_ctags.rs",
+                "cmd_git.rs",
+                "lib.rs",
+                "main.rs",
+            ]
+        );
+    }
+
+    #[test]
     fn test_get_files_include_submodule() {
         let args = vec!["ptags", "--include-submodule"];
         let opt = Opt::from_iter(args.iter());
