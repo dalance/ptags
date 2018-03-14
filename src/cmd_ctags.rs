@@ -4,7 +4,7 @@ use std::str;
 use std::io::{BufReader, Read, Write};
 use std::thread;
 use std::sync::mpsc;
-use super::Opt;
+use bin::Opt;
 use tempfile::NamedTempFile;
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -132,7 +132,7 @@ impl CmdCtags {
 
 #[cfg(test)]
 mod tests {
-    use super::super::{git_files, Opt};
+    use super::super::bin::{git_files, Opt};
     use super::CmdCtags;
     use std::str;
     use structopt::StructOpt;

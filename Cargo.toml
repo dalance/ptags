@@ -19,6 +19,21 @@ structopt   = "0.2.5"
 tempfile    = "2.2.0"
 time        = "0.1.39"
 
+[dev-dependencies]
+bencher = "0.1.5"
+
+[lib]
+name = "ptagslib"
+path = "src/lib.rs"
+
+[[bin]]
+name = "ptags"
+path = "src/main.rs"
+
+[[bench]]
+name = "ptags_bench"
+harness = false
+
 [package.metadata.release]
 dev-version-ext = "pre"
 pre-release-commit-message = "Prepare to v{{version}}"

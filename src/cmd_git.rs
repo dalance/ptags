@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use std::process::{Command, Output};
 use std::str;
-use super::Opt;
+use bin::Opt;
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Error
@@ -153,7 +153,7 @@ impl CmdGit {
 #[cfg(test)]
 mod tests {
     use super::CmdGit;
-    use super::super::Opt;
+    use bin::Opt;
     use structopt::StructOpt;
 
     #[test]
