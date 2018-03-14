@@ -226,6 +226,7 @@ mod tests {
     fn test_run() {
         let ret = run();
         assert!(ret.is_ok());
+        assert_eq!(format!("{:?}", ret), "Ok(())");
     }
 
     #[test]
@@ -234,5 +235,6 @@ mod tests {
         let opt = Opt::from_iter(args.iter());
         let ret = run_opt(&opt);
         assert!(ret.is_ok());
+        assert_eq!(format!("{:?}", ret), "Ok(())");
     }
 }

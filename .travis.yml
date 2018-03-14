@@ -1,9 +1,5 @@
 language: rust
 
-env:
-  global:
-    - RUST_TEST_THREADS=1
-
 os:
 - linux
 - osx
