@@ -151,12 +151,34 @@ mod tests {
     }
 
     #[test]
-    fn test_call_fail() {
+    fn test_call_with_opt() {
+        let args = vec!["ptags", "-t", "1", "-c=-u"];
+        let opt = Opt::from_iter(args.iter());
+        let files = git_files(&opt).unwrap();
+        let outputs = CmdCtags::call(&opt, &files).unwrap();
+        let mut iter = str::from_utf8(&outputs[0].stdout).unwrap().lines();
+        assert_eq!(
+            iter.next().unwrap(),
+            "VERSION\tMakefile\t/^VERSION = $(patsubst \"%\",%, $(word 3, $(shell grep version Cargo.toml)))$/;\"\tm"
+        );
+    }
+
+    #[test]
+    fn test_command_fail() {
         let args = vec!["ptags", "--bin-ctags", "aaa"];
         let opt = Opt::from_iter(args.iter());
         let files = git_files(&opt).unwrap();
         let outputs = CmdCtags::call(&opt, &files);
         assert_eq!(format!("{:?}", outputs), "Err(Error(CommandFailed(\"aaa\", Error { repr: Os { code: 2, message: \"No such file or directory\" } }), State { next_error: None, backtrace: None }))");
+    }
+
+    #[test]
+    fn test_ctags_fail() {
+        let args = vec!["ptags", "--opt-ctags=--u"];
+        let opt = Opt::from_iter(args.iter());
+        let files = git_files(&opt).unwrap();
+        let outputs = CmdCtags::call(&opt, &files);
+        assert_eq!(format!("{:?}", outputs), "Err(Error(CtagsFailed(\"ctags -L - -f -  --u\", \"\"), State { next_error: None, backtrace: None }))");
     }
 
     #[test]

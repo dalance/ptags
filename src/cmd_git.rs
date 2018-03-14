@@ -160,7 +160,7 @@ mod tests {
     fn test_ls_files() {
         let args = vec!["ptags"];
         let opt = Opt::from_iter(args.iter());
-        let files = CmdGit::ls_files(&opt).unwrap();
+        let files = CmdGit::get_files(&opt).unwrap();
         assert_eq!(
             files,
             vec![
@@ -181,18 +181,41 @@ mod tests {
 
     #[test]
     fn test_lfs_ls_files() {
-        let args = vec!["ptags"];
+        let args = vec!["ptags", "--exclude-lfs"];
         let opt = Opt::from_iter(args.iter());
-        let files = CmdGit::lfs_ls_files(&opt).unwrap();
-        assert_eq!(files, Vec::<String>::new());
+        let files = CmdGit::get_files(&opt).unwrap();
+        assert_eq!(
+            files,
+            vec![
+                ".cargo/config",
+                ".gitignore",
+                ".travis.yml",
+                "Cargo.lock",
+                "Cargo.toml",
+                "LICENSE",
+                "Makefile",
+                "README.md",
+                "src/cmd_ctags.rs",
+                "src/cmd_git.rs",
+                "src/main.rs",
+            ]
+        );
     }
 
     #[test]
-    fn test_ls_files_fail() {
+    fn test_command_fail() {
         let args = vec!["ptags", "--bin-git", "aaa"];
         let opt = Opt::from_iter(args.iter());
         let files = CmdGit::ls_files(&opt);
         assert_eq!(format!("{:?}", files), "Err(Error(CommandFailed(\"aaa\", Error { repr: Os { code: 2, message: \"No such file or directory\" } }), State { next_error: None, backtrace: None }))");
+    }
+
+    #[test]
+    fn test_git_fail() {
+        let args = vec!["ptags", "--opt-git=-aaa"];
+        let opt = Opt::from_iter(args.iter());
+        let files = CmdGit::ls_files(&opt);
+        assert_eq!(&format!("{:?}", files)[0..100], "Err(Error(GitFailed(\"git ls-files --cached --exclude-standard -aaa\", \"error: unknown switch `a\\\'\\nus");
     }
 
 }
