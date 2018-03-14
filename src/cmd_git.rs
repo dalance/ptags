@@ -154,10 +154,12 @@ impl CmdGit {
 mod tests {
     use super::CmdGit;
     use bin::Opt;
+    use std::fs;
+    use std::io::{BufWriter, Write};
     use structopt::StructOpt;
 
     #[test]
-    fn test_ls_files() {
+    fn test_get_files() {
         let args = vec!["ptags"];
         let opt = Opt::from_iter(args.iter());
         let files = CmdGit::get_files(&opt).unwrap();
@@ -183,7 +185,7 @@ mod tests {
     }
 
     #[test]
-    fn test_lfs_ls_files() {
+    fn test_get_files_exclude_lfs() {
         let args = vec!["ptags", "--exclude-lfs"];
         let opt = Opt::from_iter(args.iter());
         let files = CmdGit::get_files(&opt).unwrap();
@@ -206,6 +208,64 @@ mod tests {
                 "src/main.rs",
             ]
         );
+    }
+
+    #[test]
+    fn test_get_files_include_submodule() {
+        let args = vec!["ptags", "--include-submodule"];
+        let opt = Opt::from_iter(args.iter());
+        let files = CmdGit::get_files(&opt).unwrap();
+        assert_eq!(
+            files,
+            vec![
+                ".cargo/config",
+                ".gitignore",
+                ".travis.yml",
+                "Cargo.lock",
+                "Cargo.toml",
+                "LICENSE",
+                "Makefile",
+                "README.md",
+                "benches/ptags_bench.rs",
+                "src/bin.rs",
+                "src/cmd_ctags.rs",
+                "src/cmd_git.rs",
+                "src/lib.rs",
+                "src/main.rs",
+            ]
+        );
+    }
+
+    #[test]
+    fn test_get_files_include_untracked() {
+        {
+            let mut f = BufWriter::new(fs::File::create("tmp").unwrap());
+            let _ = f.write(b"");
+        }
+        let args = vec!["ptags", "--include-untracked"];
+        let opt = Opt::from_iter(args.iter());
+        let files = CmdGit::get_files(&opt).unwrap();
+        assert_eq!(
+            files,
+            vec![
+                ".cargo/config",
+                ".gitignore",
+                ".travis.yml",
+                "Cargo.lock",
+                "Cargo.toml",
+                "LICENSE",
+                "Makefile",
+                "README.md",
+                "benches/ptags_bench.rs",
+                "src/bin.rs",
+                "src/cmd_ctags.rs",
+                "src/cmd_git.rs",
+                "src/lib.rs",
+                "src/main.rs",
+                "tmp",
+            ]
+        );
+        let _ = fs::remove_file("tmp");
     }
 
     #[test]

@@ -230,7 +230,7 @@ mod tests {
 
     #[test]
     fn test_run_opt() {
-        let args = vec!["ptags", "-s", "-v", "--validate-utf8"];
+        let args = vec!["ptags", "-s", "-v", "--validate-utf8", "--unsorted"];
         let opt = Opt::from_iter(args.iter());
         let ret = run_opt(&opt);
         assert!(ret.is_ok());
