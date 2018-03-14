@@ -173,9 +173,7 @@ fn write_tags(opt: &Opt, outputs: &[Output]) -> Result<()> {
 // Main
 // ---------------------------------------------------------------------------------------------------------------------
 
-fn run() -> Result<()> {
-    let opt = Opt::from_args();
-
+fn run_opt(opt: &Opt) -> Result<()> {
     let files;
     let time_git_files = watch_time!({
         files = git_files(&opt)?;
@@ -209,6 +207,11 @@ fn run() -> Result<()> {
     Ok(())
 }
 
+fn run() -> Result<()> {
+    let opt = Opt::from_args();
+    run_opt(&opt)
+}
+
 quick_main!(run);
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -222,6 +225,14 @@ mod tests {
     #[test]
     fn test_run() {
         let ret = run();
+        assert!(ret.is_ok());
+    }
+
+    #[test]
+    fn test_run_opt() {
+        let args = vec!["ptags", "-s", "-v", "--validate-utf8"];
+        let opt = Opt::from_iter(args.iter());
+        let ret = run_opt(&opt);
         assert!(ret.is_ok());
     }
 }
