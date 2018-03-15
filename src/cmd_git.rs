@@ -1,7 +1,7 @@
+use bin::Opt;
 use std::path::PathBuf;
 use std::process::{Command, Output};
 use std::str;
-use bin::Opt;
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Error

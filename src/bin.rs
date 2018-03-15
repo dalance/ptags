@@ -1,11 +1,11 @@
 use cmd_ctags::CmdCtags;
 use cmd_git::CmdGit;
 use std::fs;
+use std::io::{stdout, BufWriter, Write};
 use std::path::PathBuf;
 use std::process::Output;
 use std::str;
-use std::io::{BufWriter, Write};
-use structopt::StructOpt;
+use structopt::{clap, StructOpt};
 use time::PreciseTime;
 
 // ---------------------------------------------------------------------------------------------------------------------

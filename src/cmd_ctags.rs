@@ -1,10 +1,10 @@
+use bin::Opt;
+use std::io::{BufReader, Read, Write};
 use std::path::PathBuf;
 use std::process::{Command, Output, Stdio};
 use std::str;
-use std::io::{BufReader, Read, Write};
-use std::thread;
 use std::sync::mpsc;
-use bin::Opt;
+use std::thread;
 use tempfile::NamedTempFile;
 
 // ---------------------------------------------------------------------------------------------------------------------

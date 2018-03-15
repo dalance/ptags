@@ -5,6 +5,6 @@ extern crate structopt;
 extern crate tempfile;
 extern crate time;
 
-pub mod cmd_git;
-pub mod cmd_ctags;
 pub mod bin;
+pub mod cmd_ctags;
+pub mod cmd_git;
