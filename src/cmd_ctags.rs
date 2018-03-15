@@ -1,7 +1,11 @@
 use bin::Opt;
+#[cfg(unix)]
+use nix::fcntl::{fcntl, FcntlArg};
 use std::io::{BufReader, Read, Write};
+#[cfg(unix)]
+use std::os::unix::io::AsRawFd;
 use std::path::PathBuf;
-use std::process::{Command, Output, Stdio};
+use std::process::{ChildStdin, Command, Output, Stdio};
 use std::str;
 use std::sync::mpsc;
 use std::thread;
@@ -16,6 +20,7 @@ error_chain! {
         Io(::std::io::Error);
         Utf8(::std::str::Utf8Error);
         Recv(::std::sync::mpsc::RecvError);
+        Nix(::nix::Error) #[cfg(unix)];
     }
     errors {
         CtagsFailed(cmd: String, err: String) {
@@ -40,6 +45,9 @@ impl CmdCtags {
         let mut args = Vec::new();
         args.push(String::from("-L -"));
         args.push(String::from("-f -"));
+        if opt.unsorted {
+            args.push(String::from("--sort=no"));
+        }
         for e in &opt.exclude {
             args.push(String::from(format!("--exclude={}", e)));
         }
@@ -73,6 +81,7 @@ impl CmdCtags {
                     Ok(mut x) => {
                         {
                             let stdin = x.stdin.as_mut().unwrap();
+                            let _ = CmdCtags::set_pipe_size(&stdin, file.len() as i32).or_else(|x| tx.send(Err(x.into())));
                             let _ = stdin.write(file.as_bytes());
                         }
                         match x.wait_with_output() {
@@ -143,6 +152,17 @@ impl CmdCtags {
             .current_dir(&opt.dir)
             .output()?;
         Ok(str::from_utf8(&output.stdout)?.starts_with("Exuberant Ctags"))
+    }
+
+    #[cfg(unix)]
+    fn set_pipe_size(stdin: &ChildStdin, len: i32) -> Result<()> {
+        fcntl(stdin.as_raw_fd(), FcntlArg::F_SETPIPE_SZ(len))?;
+        Ok(())
+    }
+
+    #[cfg(not(unix))]
+    fn set_pipe_size(_stdin: &ChildStdin, _len: i32) -> Result<()> {
+        Ok(())
     }
 }
 
