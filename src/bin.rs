@@ -19,7 +19,7 @@ pub struct Opt {
     #[structopt(short = "t", long = "thread", default_value = "8")]
     pub thread: usize,
 
-    /// Output filename
+    /// Output filename ( filename '-' means output to stdout )
     #[structopt(short = "f", long = "file", default_value = "tags", parse(from_os_str))]
     pub output: PathBuf,
 
@@ -146,7 +146,11 @@ fn write_tags(opt: &Opt, outputs: &[Output]) -> Result<()> {
         iters.push(iter);
     }
 
-    let mut f = BufWriter::new(fs::File::create(&opt.output)?);
+    let mut f = if opt.output.to_str().unwrap_or("") == "-" {
+        BufWriter::new(Box::new(stdout()) as Box<Write>)
+    } else {
+        BufWriter::new(Box::new(fs::File::create(&opt.output)?) as Box<Write>)
+    };
 
     f.write(get_tags_header(&opt)?.as_bytes())?;
 
@@ -195,17 +199,17 @@ pub fn run_opt(opt: &Opt) -> Result<()> {
     if opt.stat {
         let sum: usize = files.iter().map(|x| x.lines().count()).sum();
 
-        println!("\nStatistics");
-        println!("- Options");
-        println!("    thread    : {}\n", opt.thread);
+        eprintln!("\nStatistics");
+        eprintln!("- Options");
+        eprintln!("    thread    : {}\n", opt.thread);
 
-        println!("- Searched files");
-        println!("    total     : {}\n", sum);
+        eprintln!("- Searched files");
+        eprintln!("    total     : {}\n", sum);
 
-        println!("- Elapsed time[ms]");
-        println!("    git_files : {}", time_git_files.num_milliseconds());
-        println!("    call_ctags: {}", time_call_ctags.num_milliseconds());
-        println!("    write_tags: {}", time_write_tags.num_milliseconds());
+        eprintln!("- Elapsed time[ms]");
+        eprintln!("    git_files : {}", time_git_files.num_milliseconds());
+        eprintln!("    call_ctags: {}", time_call_ctags.num_milliseconds());
+        eprintln!("    write_tags: {}", time_write_tags.num_milliseconds());
     }
 
     Ok(())
