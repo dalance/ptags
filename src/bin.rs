@@ -14,6 +14,7 @@ use time::PreciseTime;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "ptags")]
+#[structopt(raw(long_version = "option_env!(\"LONG_VERSION\").unwrap_or(env!(\"CARGO_PKG_VERSION\"))"))]
 #[structopt(raw(setting = "clap::AppSettings::AllowLeadingHyphen"))]
 #[structopt(raw(setting = "clap::AppSettings::ColoredHelp"))]
 pub struct Opt {
