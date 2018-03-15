@@ -172,7 +172,7 @@ mod tests {
 
     #[test]
     fn test_call_with_opt() {
-        let args = vec!["ptags", "-t", "1", "-c=-u"];
+        let args = vec!["ptags", "-t", "1", "--opt-ctags=-u"];
         let opt = Opt::from_iter(args.iter());
         let files = git_files(&opt).unwrap();
         let outputs = CmdCtags::call(&opt, &files).unwrap();

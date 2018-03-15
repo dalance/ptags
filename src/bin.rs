@@ -14,6 +14,8 @@ use time::PreciseTime;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "ptags")]
+#[structopt(raw(setting = "clap::AppSettings::AllowLeadingHyphen"))]
+#[structopt(raw(setting = "clap::AppSettings::ColoredHelp"))]
 pub struct Opt {
     /// Number of threads
     #[structopt(short = "t", long = "thread", default_value = "8")]
@@ -40,15 +42,15 @@ pub struct Opt {
     pub bin_git: PathBuf,
 
     /// Options passed to ctags
-    #[structopt(short = "c", long = "opt-ctags")]
+    #[structopt(short = "c", long = "opt-ctags", raw(number_of_values = "1"))]
     pub opt_ctags: Vec<String>,
 
     /// Options passed to git
-    #[structopt(short = "g", long = "opt-git")]
+    #[structopt(short = "g", long = "opt-git", raw(number_of_values = "1"))]
     pub opt_git: Vec<String>,
 
     /// Options passed to git-lfs
-    #[structopt(long = "opt-git-lfs")]
+    #[structopt(long = "opt-git-lfs", raw(number_of_values = "1"))]
     pub opt_git_lfs: Vec<String>,
 
     /// Verbose mode
@@ -79,8 +81,8 @@ pub struct Opt {
     #[structopt(long = "unsorted")]
     pub unsorted: bool,
 
-    /// Glob pattern of exclude file ( ex. --exclude='*.rs' )
-    #[structopt(short = "e", long = "exclude")]
+    /// Glob pattern of exclude file ( ex. --exclude '*.rs' )
+    #[structopt(short = "e", long = "exclude", raw(number_of_values = "1"))]
     pub exclude: Vec<String>,
 }
 
