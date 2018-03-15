@@ -93,12 +93,12 @@ pub struct Opt {
 
 error_chain! {
     links {
-        GitError(super::cmd_git::Error, super::cmd_git::ErrorKind);
-        CtagsError(super::cmd_ctags::Error, super::cmd_ctags::ErrorKind);
+        Git(super::cmd_git::Error, super::cmd_git::ErrorKind);
+        Ctags(super::cmd_ctags::Error, super::cmd_ctags::ErrorKind);
     }
     foreign_links {
         Io(::std::io::Error);
-        FromUtf8Error(::std::str::Utf8Error);
+        Utf8(::std::str::Utf8Error);
     }
 }
 
@@ -252,6 +252,6 @@ mod tests {
         let args = vec!["ptags", "--bin-git", "aaa"];
         let opt = Opt::from_iter(args.iter());
         let ret = run_opt(&opt);
-        assert_eq!(format!("{:?}", ret), "Err(Error(GitError(CommandFailed(\"aaa\", Error { repr: Os { code: 2, message: \"No such file or directory\" } })), State { next_error: None, backtrace: None }))");
+        assert_eq!(format!("{:?}", ret), "Err(Error(Git(CommandFailed(\"aaa\", Error { repr: Os { code: 2, message: \"No such file or directory\" } })), State { next_error: None, backtrace: None }))");
     }
 }

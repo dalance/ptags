@@ -14,8 +14,8 @@ use tempfile::NamedTempFile;
 error_chain! {
     foreign_links {
         Io(::std::io::Error);
-        FromUtf8Error(::std::str::Utf8Error);
-        FromRecvError(::std::sync::mpsc::RecvError);
+        Utf8(::std::str::Utf8Error);
+        Recv(::std::sync::mpsc::RecvError);
     }
     errors {
         CtagsFailed(cmd: String, err: String) {

@@ -9,7 +9,7 @@ use std::str;
 
 error_chain! {
     foreign_links {
-        FromUtf8Error(::std::str::Utf8Error);
+        Utf8(::std::str::Utf8Error);
     }
     errors {
         GitFailed(cmd: String, err: String) {
