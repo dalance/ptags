@@ -1,8 +1,8 @@
 use bin::Opt;
-#[cfg(unix)]
+#[cfg(linux)]
 use nix::fcntl::{fcntl, FcntlArg};
 use std::io::{BufReader, Read, Write};
-#[cfg(unix)]
+#[cfg(linux)]
 use std::os::unix::io::AsRawFd;
 use std::path::PathBuf;
 use std::process::{ChildStdin, Command, Output, Stdio};
@@ -20,7 +20,7 @@ error_chain! {
         Io(::std::io::Error);
         Utf8(::std::str::Utf8Error);
         Recv(::std::sync::mpsc::RecvError);
-        Nix(::nix::Error) #[cfg(unix)];
+        Nix(::nix::Error) #[cfg(linux)];
     }
     errors {
         CtagsFailed(cmd: String, err: String) {
@@ -154,13 +154,13 @@ impl CmdCtags {
         Ok(str::from_utf8(&output.stdout)?.starts_with("Exuberant Ctags"))
     }
 
-    #[cfg(unix)]
+    #[cfg(linux)]
     fn set_pipe_size(stdin: &ChildStdin, len: i32) -> Result<()> {
         fcntl(stdin.as_raw_fd(), FcntlArg::F_SETPIPE_SZ(len))?;
         Ok(())
     }
 
-    #[cfg(not(unix))]
+    #[cfg(not(linux))]
     fn set_pipe_size(_stdin: &ChildStdin, _len: i32) -> Result<()> {
         Ok(())
     }
