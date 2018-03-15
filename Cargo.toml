@@ -1,6 +1,6 @@
 [package]
 name = "ptags"
-version = "0.1.8-pre"
+version = "0.1.8"
 authors = ["dalance@gmail.com"]
 repository = "https://github.com/dalance/ptags"
 keywords = ["ctags", "universal-ctags"]
