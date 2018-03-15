@@ -74,6 +74,19 @@ You can pass options to `ctags` by`-c`/`--ctags_opt` option like below.
 ptags -c=--links=no -c=--languages=Rust
 ```
 
+Searched file types per options are below.
+`--include-submodule` and `--include_untracked` are exclusive.
+This is the restriction of `git ls-files`.
+Any include/exclude options without the above combination can be used simultaneously.
+
+| File type     | Default  | --exclude-lfs | --include-ignored | --include-submodule | --include-untracked |
+| ------------- | -------- | ------------- | ----------------- | ------------------- | ------------------- |
+| tracked       | o        | o             | o                 | o                   | o                   |
+| untracked     | x        | x             | x                 | x                   | o                   |
+| ignored       | x        | x             | o                 | x                   | x                   |
+| lfs tracked   | o        | x             | o                 | o                   | o                   |
+| in submodules | x        | x             | x                 | o                   | x                   |
+
 ## Benchmark
 
 ### Environment
