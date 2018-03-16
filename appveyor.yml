@@ -10,6 +10,7 @@ install:
   - rustup-init.exe --default-host %TARGET% --default-toolchain %CHANNEL% -y
   - ps: curl -OutFile ctags.zip -Uri "https://github.com/universal-ctags/ctags-win32/releases/download/2018-03-13%2F5010e849/ctags-2018-03-13_5010e849-x64.zip"
   - 7z e ctags.zip -oC:\Users\appveyor\.cargo\bin ctags.exe
+  - del rustup-init.exe ctags.zip
   - set PATH=%PATH%;C:\Users\appveyor\.cargo\bin
   - rustc -Vv
   - cargo -V
@@ -23,4 +24,6 @@ build: false
 
 # Equivalent to Travis' `script` phase
 test_script:
+  - git submodule init
+  - git submodule update
   - cargo test
