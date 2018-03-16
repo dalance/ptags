@@ -36,7 +36,7 @@ The tested version is below.
 ## Usage
 
 ```
-ptags 0.1.6-pre
+ptags 0.1.9-pre
 dalance@gmail.com
 A parallel universal-ctags wrapper for git repository
 
@@ -58,11 +58,13 @@ FLAGS:
 OPTIONS:
         --bin-ctags <bin_ctags>           Path to ctags binary [default: ctags]
         --bin-git <bin_git>               Path to git binary [default: git]
+        --completion <completion>         Generate shell completion file [possible values: bash, fish,
+                                          zsh, powershell]
     -e, --exclude <exclude>...            Glob pattern of exclude file ( ex. --exclude '*.rs' )
     -c, --opt-ctags <opt_ctags>...        Options passed to ctags
     -g, --opt-git <opt_git>...            Options passed to git
         --opt-git-lfs <opt_git_lfs>...    Options passed to git-lfs
-    -f, --file <output>                   Output filename [default: tags]
+    -f, --file <output>                   Output filename ( filename '-' means output to stdout ) [default: tags]
     -t, --thread <thread>                 Number of threads [default: 8]
 
 ARGS:

@@ -85,6 +85,11 @@ pub struct Opt {
     /// Glob pattern of exclude file ( ex. --exclude '*.rs' )
     #[structopt(short = "e", long = "exclude", raw(number_of_values = "1"))]
     pub exclude: Vec<String>,
+
+    /// Generate shell completion file
+    #[structopt(long = "completion",
+                raw(possible_values = "&[\"bash\", \"fish\", \"zsh\", \"powershell\"]"))]
+    pub completion: Option<String>,
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -185,6 +190,21 @@ fn write_tags(opt: &Opt, outputs: &[Output]) -> Result<()> {
 // ---------------------------------------------------------------------------------------------------------------------
 
 pub fn run_opt(opt: &Opt) -> Result<()> {
+    match opt.completion {
+        Some(ref x) => {
+            let shell = match x.as_str() {
+                "bash" => clap::Shell::Bash,
+                "fish" => clap::Shell::Fish,
+                "zsh" => clap::Shell::Zsh,
+                "powershell" => clap::Shell::PowerShell,
+                _ => clap::Shell::Bash,
+            };
+            Opt::clap().gen_completions("ptags", shell, "./");
+            return Ok(());
+        }
+        None => {}
+    }
+
     let files;
     let time_git_files = watch_time!({
         files = git_files(&opt)?;
@@ -230,6 +250,7 @@ pub fn run() -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::path::Path;
 
     #[test]
     fn test_run() {
@@ -256,5 +277,34 @@ mod tests {
             &format!("{:?}", ret)[0..72],
             "Err(Error(Git(CommandFailed(\"aaa\", Error { repr: Os { code: 2, message: "
         );
+    }
+
+    #[test]
+    fn test_run_completion() {
+        let args = vec!["ptags", "--completion", "bash"];
+        let opt = Opt::from_iter(args.iter());
+        let ret = run_opt(&opt);
+        assert!(ret.is_ok());
+        let args = vec!["ptags", "--completion", "fish"];
+        let opt = Opt::from_iter(args.iter());
+        let ret = run_opt(&opt);
+        assert!(ret.is_ok());
+        let args = vec!["ptags", "--completion", "zsh"];
+        let opt = Opt::from_iter(args.iter());
+        let ret = run_opt(&opt);
+        assert!(ret.is_ok());
+        let args = vec!["ptags", "--completion", "powershell"];
+        let opt = Opt::from_iter(args.iter());
+        let ret = run_opt(&opt);
+        assert!(ret.is_ok());
+
+        assert!(Path::new("ptags.bash").exists());
+        assert!(Path::new("ptags.fish").exists());
+        assert!(Path::new("_ptags").exists());
+        assert!(Path::new("_ptags.ps1").exists());
+        let _ = fs::remove_file("ptags.bash");
+        let _ = fs::remove_file("ptags.fish");
+        let _ = fs::remove_file("_ptags");
+        let _ = fs::remove_file("_ptags.ps1");
     }
 }
