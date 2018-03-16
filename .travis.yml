@@ -9,6 +9,7 @@ before_script:
 - if [[ $TRAVIS_OS_NAME == "linux" ]]; then rustup target add x86_64-pc-windows-gnu; fi
 - if [[ $TRAVIS_OS_NAME == "linux" ]]; then sudo apt-get -qq update; fi
 - if [[ $TRAVIS_OS_NAME == "linux" ]]; then sudo apt-get -qq install gcc-mingw-w64-x86-64 musl-tools exuberant-ctags libssl-dev; fi
+- if [[ $TRAVIS_OS_NAME == "linux" ]]; then sudo apt-get -qq install libcurl4-openssl-dev libelf-dev libdw-dev cmake gcc binutils-dev libiberty-dev; fi
 - if [[ $TRAVIS_OS_NAME == "osx"   ]]; then brew install --HEAD universal-ctags/universal-ctags/universal-ctags; fi
 - if [[ $TRAVIS_OS_NAME == "osx"   ]]; then brew install git-lfs; fi
 - ctags --version
@@ -22,13 +23,19 @@ script:
 
 after_success: |
     if [[ $TRAVIS_OS_NAME == "linux" ]]; then
-        bash <(curl https://raw.githubusercontent.com/xd009642/tarpaulin/master/travis-install.sh)
-        # Uncomment the following line for coveralls.io
-        # cargo tarpaulin --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
-
-        # Uncomment the following two lines create and upload a report for codecov.io
-        cargo tarpaulin --out Xml
-        bash <(curl -s https://codecov.io/bash)
+        wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz &&
+        tar xzf master.tar.gz &&
+        cd kcov-master &&
+        mkdir build &&
+        cd build &&
+        cmake .. &&
+        make &&
+        make install DESTDIR=../../kcov-build &&
+        cd ../.. &&
+        rm -rf kcov-master &&
+        for file in target/debug/ptags-*[^\.d]; do mkdir -p "target/cov/$(basename $file)"; ./kcov-build/usr/local/bin/kcov --exclude-pattern=/.cargo,/usr/lib --verify "target/cov/$(basename $file)" "$file"; done &&
+        bash <(curl -s https://codecov.io/bash) &&
+        echo "Uploaded code coverage"
     fi
 
 deploy:
