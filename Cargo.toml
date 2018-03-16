@@ -11,6 +11,7 @@ description = "A parallel universal-ctags wrapper for git repository"
 
 [badges]
 travis-ci = { repository = "dalance/ptags" }
+appveyor = { repository = "dalance/ptags", branch = "master", service = "github" }
 codecov = { repository = "dalance/ptags", branch = "master", service = "github" }
 
 [dependencies]
