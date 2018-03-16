@@ -10,7 +10,7 @@ environment:
 install:
   - curl -sSf -o rustup-init.exe https://win.rustup.rs
   - rustup-init.exe --default-host %TARGET% --default-toolchain %CHANNEL% -y
-  - appveyor DownloadFile "https://github.com/universal-ctags/ctags-win32/releases/download/2018-03-13%2F5010e849/ctags-2018-03-13_5010e849-x64.zip" -FileName ctags.zip
+  - ps: curl -OutFile ctags.zip -Uri "https://github.com/universal-ctags/ctags-win32/releases/download/2018-03-13%2F5010e849/ctags-2018-03-13_5010e849-x64.zip"
   - 7z e ctags.zip -oC:\Users\appveyor\.cargo\bin ctags.exe
   - set PATH=%PATH%;C:\Users\appveyor\.cargo\bin
   - rustc -Vv
