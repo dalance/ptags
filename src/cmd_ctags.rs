@@ -129,6 +129,8 @@ impl CmdCtags {
         let tmp_empty = NamedTempFile::new()?;
         let tmp_tags = NamedTempFile::new()?;
         let tmp_tags_path: PathBuf = tmp_tags.path().into();
+        // In windiws environment, write access by ctags to the opened tmp_tags fails.
+        // So the tmp_tags must be closed and deleted.
         tmp_tags.close()?;
 
         let _ = Command::new(&opt.bin_ctags)
