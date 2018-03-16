@@ -11,6 +11,5 @@
 
 data/
 tags
-kcov-build/
 *.zip
 *.gz
