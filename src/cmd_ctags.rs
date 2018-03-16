@@ -252,7 +252,10 @@ mod tests {
         let opt = Opt::from_iter(args.iter());
         let files = git_files(&opt).unwrap();
         let outputs = CmdCtags::call(&opt, &files);
-        assert_eq!(format!("{:?}", outputs), "Err(Error(CtagsFailed(\"ctags -L - -f - --u\", \"\"), State { next_error: None, backtrace: None }))");
+        assert_eq!(
+            &format!("{:?}", outputs)[0..74],
+            "Err(Error(CtagsFailed(\"ctags -L - -f - --u\", \"\"), State { next_error: None"
+        );
     }
 
     #[test]
@@ -260,8 +263,9 @@ mod tests {
         let args = vec!["ptags"];
         let opt = Opt::from_iter(args.iter());
         let output = CmdCtags::get_tags_header(&opt).unwrap();
+        let output = output.lines().next();
         assert_eq!(
-            output.lines().next().unwrap_or(""),
+            output.unwrap_or(""),
             "!_TAG_FILE_FORMAT\t2\t/extended format; --format=1 will not append ;\" to lines/"
         );
     }
