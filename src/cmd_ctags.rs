@@ -230,7 +230,10 @@ mod tests {
         let opt = Opt::from_iter(args.iter());
         let files = git_files(&opt).unwrap();
         let outputs = CmdCtags::call(&opt, &files);
-        assert_eq!(format!("{:?}", outputs), "Err(Error(CommandFailed(\"aaa\", Error { repr: Os { code: 2, message: \"No such file or directory\" } }), State { next_error: None, backtrace: None }))");
+        assert_eq!(
+            &format!("{:?}", outputs)[0..68],
+            "Err(Error(CommandFailed(\"aaa\", Error { repr: Os { code: 2, message: "
+        );
     }
 
     #[test]

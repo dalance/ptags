@@ -252,6 +252,9 @@ mod tests {
         let args = vec!["ptags", "--bin-git", "aaa"];
         let opt = Opt::from_iter(args.iter());
         let ret = run_opt(&opt);
-        assert_eq!(format!("{:?}", ret), "Err(Error(Git(CommandFailed(\"aaa\", Error { repr: Os { code: 2, message: \"No such file or directory\" } })), State { next_error: None, backtrace: None }))");
+        assert_eq!(
+            &format!("{:?}", ret)[0..72],
+            "Err(Error(Git(CommandFailed(\"aaa\", Error { repr: Os { code: 2, message: "
+        );
     }
 }

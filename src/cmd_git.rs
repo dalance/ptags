@@ -158,34 +158,34 @@ mod tests {
     use std::io::{BufWriter, Write};
     use structopt::StructOpt;
 
+    static TRACKED_FILES: [&'static str; 19] = [
+        ".cargo/config",
+        ".gitattributes",
+        ".gitignore",
+        ".gitmodules",
+        ".travis.yml",
+        "Cargo.lock",
+        "Cargo.toml",
+        "LICENSE",
+        "Makefile",
+        "README.md",
+        "appveyor.yml",
+        "benches/ptags_bench.rs",
+        "src/bin.rs",
+        "src/cmd_ctags.rs",
+        "src/cmd_git.rs",
+        "src/lib.rs",
+        "src/main.rs",
+        "test/lfs.txt",
+        "test/ptags_test",
+    ];
+
     #[test]
     fn test_get_files() {
         let args = vec!["ptags"];
         let opt = Opt::from_iter(args.iter());
         let files = CmdGit::get_files(&opt).unwrap();
-        assert_eq!(
-            files,
-            vec![
-                ".cargo/config",
-                ".gitattributes",
-                ".gitignore",
-                ".gitmodules",
-                ".travis.yml",
-                "Cargo.lock",
-                "Cargo.toml",
-                "LICENSE",
-                "Makefile",
-                "README.md",
-                "benches/ptags_bench.rs",
-                "src/bin.rs",
-                "src/cmd_ctags.rs",
-                "src/cmd_git.rs",
-                "src/lib.rs",
-                "src/main.rs",
-                "test/lfs.txt",
-                "test/ptags_test",
-            ]
-        );
+        assert_eq!(files, TRACKED_FILES,);
     }
 
     #[test]
@@ -193,28 +193,13 @@ mod tests {
         let args = vec!["ptags", "--exclude-lfs"];
         let opt = Opt::from_iter(args.iter());
         let files = CmdGit::get_files(&opt).unwrap();
-        assert_eq!(
-            files,
-            vec![
-                ".cargo/config",
-                ".gitattributes",
-                ".gitignore",
-                ".gitmodules",
-                ".travis.yml",
-                "Cargo.lock",
-                "Cargo.toml",
-                "LICENSE",
-                "Makefile",
-                "README.md",
-                "benches/ptags_bench.rs",
-                "src/bin.rs",
-                "src/cmd_ctags.rs",
-                "src/cmd_git.rs",
-                "src/lib.rs",
-                "src/main.rs",
-                "test/ptags_test",
-            ]
-        );
+
+        let mut expect_files = Vec::new();
+        expect_files.extend_from_slice(&TRACKED_FILES);
+        let idx = expect_files.binary_search(&"test/lfs.txt").unwrap();
+        expect_files.remove(idx);
+
+        assert_eq!(files, expect_files,);
     }
 
     #[test]
@@ -233,29 +218,14 @@ mod tests {
         let args = vec!["ptags", "--include-submodule"];
         let opt = Opt::from_iter(args.iter());
         let files = CmdGit::get_files(&opt).unwrap();
-        assert_eq!(
-            files,
-            vec![
-                ".cargo/config",
-                ".gitattributes",
-                ".gitignore",
-                ".gitmodules",
-                ".travis.yml",
-                "Cargo.lock",
-                "Cargo.toml",
-                "LICENSE",
-                "Makefile",
-                "README.md",
-                "benches/ptags_bench.rs",
-                "src/bin.rs",
-                "src/cmd_ctags.rs",
-                "src/cmd_git.rs",
-                "src/lib.rs",
-                "src/main.rs",
-                "test/lfs.txt",
-                "test/ptags_test/README.md",
-            ]
-        );
+
+        let mut expect_files = Vec::new();
+        expect_files.extend_from_slice(&TRACKED_FILES);
+        let idx = expect_files.binary_search(&"test/ptags_test").unwrap();
+        expect_files.remove(idx);
+        expect_files.push("test/ptags_test/README.md");
+
+        assert_eq!(files, expect_files,);
     }
 
     #[test]
@@ -268,30 +238,12 @@ mod tests {
         let opt = Opt::from_iter(args.iter());
         let files = CmdGit::get_files(&opt).unwrap();
         let _ = fs::remove_file("tmp");
-        assert_eq!(
-            files,
-            vec![
-                ".cargo/config",
-                ".gitattributes",
-                ".gitignore",
-                ".gitmodules",
-                ".travis.yml",
-                "Cargo.lock",
-                "Cargo.toml",
-                "LICENSE",
-                "Makefile",
-                "README.md",
-                "benches/ptags_bench.rs",
-                "src/bin.rs",
-                "src/cmd_ctags.rs",
-                "src/cmd_git.rs",
-                "src/lib.rs",
-                "src/main.rs",
-                "test/lfs.txt",
-                "test/ptags_test",
-                "tmp",
-            ]
-        );
+
+        let mut expect_files = Vec::new();
+        expect_files.extend_from_slice(&TRACKED_FILES);
+        expect_files.push("tmp");
+
+        assert_eq!(files, expect_files,);
     }
 
     #[test]
@@ -299,7 +251,10 @@ mod tests {
         let args = vec!["ptags", "--bin-git", "aaa"];
         let opt = Opt::from_iter(args.iter());
         let files = CmdGit::ls_files(&opt);
-        assert_eq!(format!("{:?}", files), "Err(Error(CommandFailed(\"aaa\", Error { repr: Os { code: 2, message: \"No such file or directory\" } }), State { next_error: None, backtrace: None }))");
+        assert_eq!(
+            &format!("{:?}", files)[0..68],
+            "Err(Error(CommandFailed(\"aaa\", Error { repr: Os { code: 2, message: "
+        );
     }
 
     #[test]
@@ -307,7 +262,10 @@ mod tests {
         let args = vec!["ptags", "--opt-git=-aaa"];
         let opt = Opt::from_iter(args.iter());
         let files = CmdGit::ls_files(&opt);
-        assert_eq!(&format!("{:?}", files)[0..100], "Err(Error(GitFailed(\"git ls-files --cached --exclude-standard -aaa\", \"error: unknown switch `a\\\'\\nus");
+        assert_eq!(
+            &format!("{:?}", files)[0..83],
+            "Err(Error(GitFailed(\"git ls-files --cached --exclude-standard -aaa\", \"error: unknow"
+        );
     }
 
 }
