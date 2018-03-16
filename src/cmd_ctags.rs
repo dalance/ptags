@@ -1,6 +1,8 @@
 use bin::Opt;
 #[cfg(linux)]
 use nix::fcntl::{fcntl, FcntlArg};
+use std::fs;
+use std::fs::File;
 use std::io::{BufReader, Read, Write};
 #[cfg(linux)]
 use std::os::unix::io::AsRawFd;
@@ -126,15 +128,21 @@ impl CmdCtags {
     pub fn get_tags_header(opt: &Opt) -> Result<String> {
         let tmp_empty = NamedTempFile::new()?;
         let tmp_tags = NamedTempFile::new()?;
+        let tmp_tags_path: PathBuf = tmp_tags.path().into();
+        tmp_tags.close()?;
+
         let _ = Command::new(&opt.bin_ctags)
             .arg(format!("-L {}", tmp_empty.path().to_string_lossy()))
-            .arg(format!("-f {}", tmp_tags.path().to_string_lossy()))
+            .arg(format!("-f {}", tmp_tags_path.to_string_lossy()))
             .args(&opt.opt_ctags)
             .current_dir(&opt.dir)
             .status();
-        let mut f = BufReader::new(tmp_tags);
+        let mut f = BufReader::new(File::open(&tmp_tags_path)?);
         let mut s = String::new();
         f.read_to_string(&mut s)?;
+
+        fs::remove_file(&tmp_tags_path)?;
+
         Ok(s)
     }
 
