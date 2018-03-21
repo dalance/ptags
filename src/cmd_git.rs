@@ -1,5 +1,4 @@
 use bin::Opt;
-use std::path::PathBuf;
 use std::process::{Command, Output};
 use std::str;
 
@@ -9,16 +8,21 @@ use std::str;
 
 error_chain! {
     foreign_links {
+        Io(::std::io::Error);
         Utf8(::std::str::Utf8Error);
     }
     errors {
-        GitFailed(cmd: String, err: String) {
-            description("git failed")
-            display("git failed: {}\n{}", cmd, err)
+        ExecFailed(cmd: String, err: String) {
+            description("git execute failed")
+            display("failed to execute git command ({})\n{}", cmd, err)
         }
-        CommandFailed(path: PathBuf, err: ::std::io::Error) {
-            description("git command failed")
-            display("git command \"{}\" failed: {}", path.to_string_lossy(), err)
+        CallFailed(cmd: String) {
+            description("git call failed")
+            display("failed to call git command ({})", cmd)
+        }
+        ConvFailed(s: Vec<u8>) {
+            description("UTF-8 conversion failed")
+            display("failed to convert to UTF-8 ({:?})", s)
         }
     }
 }
@@ -46,22 +50,22 @@ impl CmdGit {
     }
 
     fn call(opt: &Opt, args: &[String]) -> Result<Output> {
-        let cmd = CmdGit::get_cmd(&opt, &args)?;
+        let cmd = CmdGit::get_cmd(&opt, &args);
         if opt.verbose {
             eprintln!("Call : {}", cmd);
         }
 
-        let output: Result<Output> = Command::new(&opt.bin_git)
+        let output = Command::new(&opt.bin_git)
             .args(args)
             .current_dir(&opt.dir)
             .output()
-            .or_else(|x| Err(ErrorKind::CommandFailed(opt.bin_git.clone(), x).into()));
-        let output = output?;
+            .chain_err(|| ErrorKind::CallFailed(cmd.clone()))?;
 
         if !output.status.success() {
-            bail!(ErrorKind::GitFailed(
+            bail!(ErrorKind::ExecFailed(
                 cmd,
-                String::from(str::from_utf8(&output.stderr)?)
+                String::from(str::from_utf8(&output.stderr)
+                    .chain_err(|| ErrorKind::ConvFailed(output.stderr.to_vec()))?)
             ));
         }
 
@@ -81,7 +85,9 @@ impl CmdGit {
 
         let output = CmdGit::call(&opt, &args)?;
 
-        let list = str::from_utf8(&output.stdout)?.lines();
+        let list = str::from_utf8(&output.stdout)
+            .chain_err(|| ErrorKind::ConvFailed(output.stdout.to_vec()))?
+            .lines();
         let mut ret = Vec::new();
         for l in list {
             ret.push(String::from(l));
@@ -104,7 +110,9 @@ impl CmdGit {
         let cdup = CmdGit::show_cdup(&opt)?;
         let prefix = CmdGit::show_prefix(&opt)?;
 
-        let list = str::from_utf8(&output.stdout)?.lines();
+        let list = str::from_utf8(&output.stdout)
+            .chain_err(|| ErrorKind::ConvFailed(output.stdout.to_vec()))?
+            .lines();
         let mut ret = Vec::new();
         for l in list {
             let mut path = String::from(l.split(' ').nth(2).unwrap_or(""));
@@ -124,7 +132,9 @@ impl CmdGit {
 
         let output = CmdGit::call(&opt, &args)?;
 
-        let mut list = str::from_utf8(&output.stdout)?.lines();
+        let mut list = str::from_utf8(&output.stdout)
+            .chain_err(|| ErrorKind::ConvFailed(output.stdout.to_vec()))?
+            .lines();
         Ok(String::from(list.next().unwrap_or("")))
     }
 
@@ -133,16 +143,22 @@ impl CmdGit {
 
         let output = CmdGit::call(&opt, &args)?;
 
-        let mut list = str::from_utf8(&output.stdout)?.lines();
+        let mut list = str::from_utf8(&output.stdout)
+            .chain_err(|| ErrorKind::ConvFailed(output.stdout.to_vec()))?
+            .lines();
         Ok(String::from(list.next().unwrap_or("")))
     }
 
-    fn get_cmd(opt: &Opt, args: &[String]) -> Result<String> {
-        let mut cmd = format!("{}", opt.bin_git.to_string_lossy());
+    fn get_cmd(opt: &Opt, args: &[String]) -> String {
+        let mut cmd = format!(
+            "cd {}; {}",
+            opt.dir.to_string_lossy(),
+            opt.bin_git.to_string_lossy()
+        );
         for arg in args {
             cmd = format!("{} {}", cmd, arg);
         }
-        Ok(cmd)
+        cmd
     }
 }
 
@@ -253,7 +269,7 @@ mod tests {
         let files = CmdGit::ls_files(&opt);
         assert_eq!(
             &format!("{:?}", files)[0..68],
-            "Err(Error(CommandFailed(\"aaa\", Error { repr: Os { code: 2, message: "
+            "Err(Error(CallFailed(\"cd .; aaa ls-files --cached --exclude-standard"
         );
     }
 
@@ -264,7 +280,7 @@ mod tests {
         let files = CmdGit::ls_files(&opt);
         assert_eq!(
             &format!("{:?}", files)[0..83],
-            "Err(Error(GitFailed(\"git ls-files --cached --exclude-standard -aaa\", \"error: unknow"
+            "Err(Error(ExecFailed(\"cd .; git ls-files --cached --exclude-standard -aaa\", \"error:"
         );
     }
 

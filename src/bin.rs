@@ -138,7 +138,7 @@ fn call_ctags(opt: &Opt, files: &[String]) -> Result<Vec<Output>> {
 }
 
 fn get_tags_header(opt: &Opt) -> Result<String> {
-    Ok(CmdCtags::get_tags_header(&opt)?)
+    Ok(CmdCtags::get_tags_header(&opt).chain_err(|| "failed to get ctags header")?)
 }
 
 fn write_tags(opt: &Opt, outputs: &[Output]) -> Result<()> {
@@ -157,7 +157,8 @@ fn write_tags(opt: &Opt, outputs: &[Output]) -> Result<()> {
     let mut f = if opt.output.to_str().unwrap_or("") == "-" {
         BufWriter::new(Box::new(stdout()) as Box<Write>)
     } else {
-        BufWriter::new(Box::new(fs::File::create(&opt.output)?) as Box<Write>)
+        let f = fs::File::create(&opt.output)?;
+        BufWriter::new(Box::new(f) as Box<Write>)
     };
 
     f.write(get_tags_header(&opt)?.as_bytes())?;
@@ -207,16 +208,17 @@ pub fn run_opt(opt: &Opt) -> Result<()> {
 
     let files;
     let time_git_files = watch_time!({
-        files = git_files(&opt)?;
+        files = git_files(&opt).chain_err(|| "failed to get file list")?;
     });
 
     let outputs;
     let time_call_ctags = watch_time!({
-        outputs = call_ctags(&opt, &files)?;
+        outputs = call_ctags(&opt, &files).chain_err(|| "failed to call ctags")?;
     });
 
     let time_write_tags = watch_time!({
-        let _ = write_tags(&opt, &outputs)?;
+        let _ = write_tags(&opt, &outputs)
+            .chain_err(|| format!("failed to write file ({:?})", &opt.output))?;
     });
 
     if opt.stat {
@@ -275,7 +277,7 @@ mod tests {
         let ret = run_opt(&opt);
         assert_eq!(
             &format!("{:?}", ret)[0..72],
-            "Err(Error(Git(CommandFailed(\"aaa\", Error { repr: Os { code: 2, message: "
+            "Err(Error(Msg(\"failed to get file list\"), State { next_error: Some(Error"
         );
     }
 

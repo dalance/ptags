@@ -25,13 +25,17 @@ error_chain! {
         Nix(::nix::Error) #[cfg(linux)];
     }
     errors {
-        CtagsFailed(cmd: String, err: String) {
-            description("ctags failed")
-            display("ctags failed: {}\n{}", cmd, err)
+        ExecFailed(cmd: String, err: String) {
+            description("ctags execute failed")
+            display("failed to execute ctags command ({})\n{}", cmd, err)
         }
-        CommandFailed(path: PathBuf, err: ::std::io::Error) {
-            description("ctags command failed")
-            display("ctags command \"{}\" failed: {}", path.to_string_lossy(), err)
+        CallFailed(cmd: String) {
+            description("ctags call failed")
+            display("failed to call ctags command ({})", cmd)
+        }
+        ConvFailed(s: Vec<u8>) {
+            description("UTF-8 conversion failed")
+            display("failed to convert to UTF-8 ({:?})", s)
         }
     }
 }
@@ -55,7 +59,7 @@ impl CmdCtags {
         }
         args.append(&mut opt.opt_ctags.clone());
 
-        let cmd = CmdCtags::get_cmd(&opt, &args)?;
+        let cmd = CmdCtags::get_cmd(&opt, &args);
 
         let (tx, rx) = mpsc::channel::<Result<Output>>();
 
@@ -65,6 +69,7 @@ impl CmdCtags {
             let dir = opt.dir.clone();
             let bin_ctags = opt.bin_ctags.clone();
             let args = args.clone();
+            let cmd = cmd.clone();
 
             if opt.verbose {
                 eprintln!("Call : {}", cmd);
@@ -96,8 +101,8 @@ impl CmdCtags {
                             }
                         }
                     }
-                    Err(x) => {
-                        let _ = tx.send(Err(ErrorKind::CommandFailed(bin_ctags.clone(), x).into()));
+                    Err(_) => {
+                        let _ = tx.send(Err(ErrorKind::CallFailed(cmd).into()));
                     }
                 }
             });
@@ -113,9 +118,10 @@ impl CmdCtags {
             let output = child??;
 
             if !output.status.success() {
-                bail!(ErrorKind::CtagsFailed(
+                bail!(ErrorKind::ExecFailed(
                     cmd,
-                    String::from(str::from_utf8(&output.stderr)?)
+                    String::from(str::from_utf8(&output.stderr)
+                        .chain_err(|| ErrorKind::ConvFailed(output.stderr.to_vec()))?)
                 ));
             }
 
@@ -148,12 +154,16 @@ impl CmdCtags {
         Ok(s)
     }
 
-    fn get_cmd(opt: &Opt, args: &[String]) -> Result<String> {
-        let mut cmd = format!("{}", opt.bin_ctags.to_string_lossy());
+    fn get_cmd(opt: &Opt, args: &[String]) -> String {
+        let mut cmd = format!(
+            "cd {}; {}",
+            opt.dir.to_string_lossy(),
+            opt.bin_ctags.to_string_lossy()
+        );
         for arg in args {
             cmd = format!("{} {}", cmd, arg);
         }
-        Ok(cmd)
+        cmd
     }
 
     #[allow(dead_code)]
@@ -242,7 +252,7 @@ mod tests {
         let outputs = CmdCtags::call(&opt, &files);
         assert_eq!(
             &format!("{:?}", outputs)[0..68],
-            "Err(Error(CommandFailed(\"aaa\", Error { repr: Os { code: 2, message: "
+            "Err(Error(CallFailed(\"cd .; aaa -L - -f -\"), State { next_error: Non"
         );
     }
 
@@ -254,7 +264,7 @@ mod tests {
         let outputs = CmdCtags::call(&opt, &files);
         assert_eq!(
             &format!("{:?}", outputs)[0..74],
-            "Err(Error(CtagsFailed(\"ctags -L - -f - --u\", \"\"), State { next_error: None"
+            "Err(Error(ExecFailed(\"cd .; ctags -L - -f - --u\", \"\"), State { next_error:"
         );
     }
 
