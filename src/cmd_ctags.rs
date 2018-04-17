@@ -1,10 +1,10 @@
 use bin::Opt;
-#[cfg(linux)]
+#[cfg(target_os = "linux")]
 use nix::fcntl::{fcntl, FcntlArg};
 use std::fs;
 use std::fs::File;
 use std::io::{BufReader, Read, Write};
-#[cfg(linux)]
+#[cfg(target_os = "linux")]
 use std::os::unix::io::AsRawFd;
 use std::path::PathBuf;
 use std::process::{ChildStdin, Command, Output, Stdio};
@@ -22,7 +22,7 @@ error_chain! {
         Io(::std::io::Error);
         Utf8(::std::str::Utf8Error);
         Recv(::std::sync::mpsc::RecvError);
-        Nix(::nix::Error) #[cfg(linux)];
+        Nix(::nix::Error) #[cfg(target_os = "linux")];
     }
     errors {
         ExecFailed(cmd: String, err: String) {
@@ -175,13 +175,13 @@ impl CmdCtags {
         Ok(str::from_utf8(&output.stdout)?.starts_with("Exuberant Ctags"))
     }
 
-    #[cfg(linux)]
+    #[cfg(target_os = "linux")]
     fn set_pipe_size(stdin: &ChildStdin, len: i32) -> Result<()> {
         fcntl(stdin.as_raw_fd(), FcntlArg::F_SETPIPE_SZ(len))?;
         Ok(())
     }
 
-    #[cfg(not(linux))]
+    #[cfg(not(target_os = "linux"))]
     fn set_pipe_size(_stdin: &ChildStdin, _len: i32) -> Result<()> {
         Ok(())
     }
