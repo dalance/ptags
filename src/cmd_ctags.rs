@@ -275,8 +275,8 @@ mod tests {
         let output = CmdCtags::get_tags_header(&opt).unwrap();
         let output = output.lines().next();
         assert_eq!(
-            output.unwrap_or(""),
-            "!_TAG_FILE_FORMAT\t2\t/extended format; --format=1 will not append ;\" to lines/"
+            &output.unwrap_or("")[0..18],
+            "!_TAG_FILE_FORMAT\t"
         );
     }
 }
