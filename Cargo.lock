@@ -166,7 +166,7 @@ dependencies = [
 
 [[package]]
 name = "ptags"
-version = "0.2.0"
+version = "0.2.1-pre"
 dependencies = [
  "bencher 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "error-chain 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
