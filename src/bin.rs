@@ -1,18 +1,22 @@
 use cmd_ctags::CmdCtags;
 use cmd_git::CmdGit;
+use std::env;
 use std::fs;
-use std::io::{stdout, BufWriter, Write};
+use std::io::{stdout, BufWriter, Read, Write};
 use std::path::PathBuf;
 use std::process::Output;
 use std::str;
 use structopt::{clap, StructOpt};
+use structopt_toml::StructOptToml;
 use time::PreciseTime;
+use toml;
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Options
 // ---------------------------------------------------------------------------------------------------------------------
 
-#[derive(StructOpt, Debug)]
+#[derive(Debug, Deserialize, Serialize, StructOpt, StructOptToml)]
+#[serde(default)]
 #[structopt(name = "ptags")]
 #[structopt(raw(long_version = "option_env!(\"LONG_VERSION\").unwrap_or(env!(\"CARGO_PKG_VERSION\"))"))]
 #[structopt(raw(setting = "clap::AppSettings::AllowLeadingHyphen"))]
@@ -90,6 +94,10 @@ pub struct Opt {
     #[structopt(long = "completion",
                 raw(possible_values = "&[\"bash\", \"fish\", \"zsh\", \"powershell\"]"))]
     pub completion: Option<String>,
+
+    /// Generate configuration sample file
+    #[structopt(long = "config")]
+    pub config: bool,
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -104,6 +112,8 @@ error_chain! {
     foreign_links {
         Io(::std::io::Error);
         Utf8(::std::str::Utf8Error);
+        Opt(::structopt_toml::Error);
+        Toml(::toml::ser::Error);
     }
 }
 
@@ -191,6 +201,12 @@ fn write_tags(opt: &Opt, outputs: &[Output]) -> Result<()> {
 // ---------------------------------------------------------------------------------------------------------------------
 
 pub fn run_opt(opt: &Opt) -> Result<()> {
+    if opt.config {
+        let toml = toml::to_string(&opt)?;
+        println!("{}", toml);
+        return Ok(())
+    }
+
     match opt.completion {
         Some(ref x) => {
             let shell = match x.as_str() {
@@ -241,7 +257,28 @@ pub fn run_opt(opt: &Opt) -> Result<()> {
 }
 
 pub fn run() -> Result<()> {
-    let opt = Opt::from_args();
+    let cfg_path = match env::home_dir() {
+        Some(mut path) => {
+            path.push(".ptags.toml");
+            if path.exists() {
+                Some(path)
+            } else {
+                None
+            }
+        }
+        None => None,
+    };
+
+    let opt = match cfg_path {
+        Some(path) => {
+            let mut f =
+                fs::File::open(&path).chain_err(|| format!("failed to open file ({:?})", path))?;
+            let mut s = String::new();
+            let _ = f.read_to_string(&mut s);
+            Opt::from_args_with_toml(&s).chain_err(|| format!("failed to parse toml ({:?})", path))?
+        }
+        None => Opt::from_args(),
+    };
     run_opt(&opt)
 }
 
@@ -308,5 +345,13 @@ mod tests {
         let _ = fs::remove_file("ptags.fish");
         let _ = fs::remove_file("_ptags");
         let _ = fs::remove_file("_ptags.ps1");
+    }
+
+    #[test]
+    fn test_run_config() {
+        let args = vec!["ptags", "--config"];
+        let opt = Opt::from_iter(args.iter());
+        let ret = run_opt(&opt);
+        assert!(ret.is_ok());
     }
 }
