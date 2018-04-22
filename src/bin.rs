@@ -293,7 +293,10 @@ mod tests {
 
     #[test]
     fn test_run() {
-        let _ = run();
+        let args = vec!["ptags"];
+        let opt = Opt::from_iter(args.iter());
+        let ret = run_opt(&opt);
+        assert!(ret.is_ok());
     }
 
     #[test]
