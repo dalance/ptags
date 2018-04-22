@@ -204,7 +204,7 @@ pub fn run_opt(opt: &Opt) -> Result<()> {
     if opt.config {
         let toml = toml::to_string(&opt)?;
         println!("{}", toml);
-        return Ok(())
+        return Ok(());
     }
 
     match opt.completion {

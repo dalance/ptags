@@ -8,8 +8,8 @@ extern crate structopt;
 #[macro_use]
 extern crate structopt_toml;
 extern crate tempfile;
-extern crate toml;
 extern crate time;
+extern crate toml;
 
 pub mod bin;
 pub mod cmd_ctags;
