@@ -120,8 +120,10 @@ impl CmdCtags {
             if !output.status.success() {
                 bail!(ErrorKind::ExecFailed(
                     cmd,
-                    String::from(str::from_utf8(&output.stderr)
-                        .chain_err(|| ErrorKind::ConvFailed(output.stderr.to_vec()))?)
+                    String::from(
+                        str::from_utf8(&output.stderr)
+                            .chain_err(|| ErrorKind::ConvFailed(output.stderr.to_vec()))?
+                    )
                 ));
             }
 
@@ -226,7 +228,14 @@ mod tests {
 
     #[test]
     fn test_call_exclude() {
-        let args = vec!["ptags", "-t", "1", "--exclude=Make*", "--exclude=README.md", "-v"];
+        let args = vec![
+            "ptags",
+            "-t",
+            "1",
+            "--exclude=Make*",
+            "--exclude=README.md",
+            "-v",
+        ];
         let opt = Opt::from_iter(args.iter());
         let files = git_files(&opt).unwrap();
         let outputs = CmdCtags::call(&opt, &files).unwrap();

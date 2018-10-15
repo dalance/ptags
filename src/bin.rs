@@ -18,7 +18,9 @@ use toml;
 #[derive(Debug, Deserialize, Serialize, StructOpt, StructOptToml)]
 #[serde(default)]
 #[structopt(name = "ptags")]
-#[structopt(raw(long_version = "option_env!(\"LONG_VERSION\").unwrap_or(env!(\"CARGO_PKG_VERSION\"))"))]
+#[structopt(
+    raw(long_version = "option_env!(\"LONG_VERSION\").unwrap_or(env!(\"CARGO_PKG_VERSION\"))")
+)]
 #[structopt(raw(setting = "clap::AppSettings::AllowLeadingHyphen"))]
 #[structopt(raw(setting = "clap::AppSettings::ColoredHelp"))]
 pub struct Opt {
@@ -27,7 +29,12 @@ pub struct Opt {
     pub thread: usize,
 
     /// Output filename ( filename '-' means output to stdout )
-    #[structopt(short = "f", long = "file", default_value = "tags", parse(from_os_str))]
+    #[structopt(
+        short = "f",
+        long = "file",
+        default_value = "tags",
+        parse(from_os_str)
+    )]
     pub output: PathBuf,
 
     /// Search directory
@@ -39,7 +46,11 @@ pub struct Opt {
     pub stat: bool,
 
     /// Path to ctags binary
-    #[structopt(long = "bin-ctags", default_value = "ctags", parse(from_os_str))]
+    #[structopt(
+        long = "bin-ctags",
+        default_value = "ctags",
+        parse(from_os_str)
+    )]
     pub bin_ctags: PathBuf,
 
     /// Path to git binary
@@ -91,8 +102,10 @@ pub struct Opt {
     pub exclude: Vec<String>,
 
     /// Generate shell completion file
-    #[structopt(long = "completion",
-                raw(possible_values = "&[\"bash\", \"fish\", \"zsh\", \"powershell\"]"))]
+    #[structopt(
+        long = "completion",
+        raw(possible_values = "&[\"bash\", \"fish\", \"zsh\", \"powershell\"]")
+    )]
     pub completion: Option<String>,
 
     /// Generate configuration sample file
@@ -276,7 +289,8 @@ pub fn run() -> Result<()> {
                 fs::File::open(&path).chain_err(|| format!("failed to open file ({:?})", path))?;
             let mut s = String::new();
             let _ = f.read_to_string(&mut s);
-            Opt::from_args_with_toml(&s).chain_err(|| format!("failed to parse toml ({:?})", path))?
+            Opt::from_args_with_toml(&s)
+                .chain_err(|| format!("failed to parse toml ({:?})", path))?
         }
         None => Opt::from_args(),
     };

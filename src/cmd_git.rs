@@ -64,8 +64,10 @@ impl CmdGit {
         if !output.status.success() {
             bail!(ErrorKind::ExecFailed(
                 cmd,
-                String::from(str::from_utf8(&output.stderr)
-                    .chain_err(|| ErrorKind::ConvFailed(output.stderr.to_vec()))?)
+                String::from(
+                    str::from_utf8(&output.stderr)
+                        .chain_err(|| ErrorKind::ConvFailed(output.stderr.to_vec()))?
+                )
             ));
         }
 
