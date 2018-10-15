@@ -1,6 +1,6 @@
 use cmd_ctags::CmdCtags;
 use cmd_git::CmdGit;
-use std::env;
+use dirs;
 use std::fs;
 use std::io::{stdout, BufWriter, Read, Write};
 use std::path::PathBuf;
@@ -271,7 +271,7 @@ pub fn run_opt(opt: &Opt) -> Result<()> {
 
 #[cfg_attr(tarpaulin, skip)]
 pub fn run() -> Result<()> {
-    let cfg_path = match env::home_dir() {
+    let cfg_path = match dirs::home_dir() {
         Some(mut path) => {
             path.push(".ptags.toml");
             if path.exists() {
