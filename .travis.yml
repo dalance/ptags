@@ -22,6 +22,7 @@ script:
 
 after_success: |
     if [[ $TRAVIS_OS_NAME == "linux" ]]; then
+        rustup install nightly
         RUSTFLAGS="--cfg procmacro2_semver_exempt" cargo +nightly install cargo-tarpaulin
         # Uncomment the following line for coveralls.io
         # cargo tarpaulin --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
