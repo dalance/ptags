@@ -256,6 +256,7 @@ pub fn run_opt(opt: &Opt) -> Result<()> {
     Ok(())
 }
 
+#[cfg_attr(tarpaulin, skip)]
 pub fn run() -> Result<()> {
     let cfg_path = match env::home_dir() {
         Some(mut path) => {
