@@ -22,13 +22,11 @@ script:
 
 after_success: |
     if [[ $TRAVIS_OS_NAME == "linux" ]]; then
-        bash <(curl https://raw.githubusercontent.com/xd009642/tarpaulin/master/travis-install.sh)
+        RUSTFLAGS="--cfg procmacro2_semver_exempt" cargo +nightly install cargo-tarpaulin
         # Uncomment the following line for coveralls.io
         # cargo tarpaulin --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
 
-        # Uncomment the following two lines create and upload a report for codecov.io
-        rustup override set beta
-        cargo tarpaulin --out Xml -- --test-threads=1
+        cargo +nightly tarpaulin --out Xml -- --test-threads=1
         bash <(curl -s https://codecov.io/bash)
     fi
 
