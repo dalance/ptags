@@ -15,7 +15,7 @@ A parallel [universal-ctags](https://ctags.io) wrapper for git repository
 
 ## Install
 
-### Download binray
+### Download binary
 
 Download from [release page](https://github.com/dalance/ptags/releases/latest), and extract to the directory in PATH.
 
