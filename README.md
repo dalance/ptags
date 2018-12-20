@@ -14,9 +14,28 @@ A parallel [universal-ctags](https://ctags.io) wrapper for git repository
     - Up to x5 faster than universal-ctags
 
 ## Install
+
+### Download binray
+
 Download from [release page](https://github.com/dalance/ptags/releases/latest), and extract to the directory in PATH.
 
-Alternatively you can install by [cargo](https://crates.io).
+### Arch Linux
+
+You can install from AUR.
+
+- https://aur.archlinux.org/packages/ptags/
+- https://aur.archlinux.org/packages/ptags-git/
+
+If you use `yay`, you can install like below:
+
+```
+yay -S ptags       // latest tagged version
+yay -S ptags-git   // current master of git repo
+```
+
+### Cargo
+
+You can install by [cargo](https://crates.io).
 
 ```
 cargo install ptags
