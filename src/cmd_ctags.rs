@@ -209,7 +209,7 @@ mod tests {
         let mut iter = str::from_utf8(&outputs[0].stdout).unwrap().lines();
         assert_eq!(
             iter.next().unwrap_or(""),
-            "BIN_NAME\tMakefile\t/^BIN_NAME = ptags$/;\"\tm"
+            "Arch Linux\tREADME.md\t/^### Arch Linux$/;\"\tS"
         );
     }
 
