@@ -207,10 +207,18 @@ mod tests {
         let files = git_files(&opt).unwrap();
         let outputs = CmdCtags::call(&opt, &files).unwrap();
         let mut iter = str::from_utf8(&outputs[0].stdout).unwrap().lines();
-        assert_eq!(
-            iter.next().unwrap_or(""),
-            "Arch Linux\tREADME.md\t/^### Arch Linux$/;\"\tS"
-        );
+        // Exuberant Ctags doesn't support Markdown ( *.md ).
+        if CmdCtags::is_exuberant_ctags(&opt).unwrap() {
+            assert_eq!(
+                iter.next().unwrap_or(""),
+                "BIN_NAME\tMakefile\t/^BIN_NAME = ptags$/;\"\tm"
+            );
+        } else {
+            assert_eq!(
+                iter.next().unwrap_or(""),
+                "Arch Linux\tREADME.md\t/^### Arch Linux$/;\"\tS"
+            );
+        }
     }
 
     #[test]
