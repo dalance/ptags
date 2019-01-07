@@ -259,7 +259,7 @@ dependencies = [
 
 [[package]]
 name = "ptags"
-version = "0.2.2-pre"
+version = "0.3.0"
 dependencies = [
  "bencher 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "dirs 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
