@@ -303,8 +303,8 @@ mod tests {
         let opt = Opt::from_iter(args.iter());
         let ret = run_opt(&opt);
         assert_eq!(
-            &format!("{:?}", ret)[0..72],
-            "Err(Os { code: 2, kind: NotFound, message: \"No such file or directory\" }"
+            &format!("{:?}", ret)[0..42],
+            "Err(Os { code: 2, kind: NotFound, message:"
         );
     }
 

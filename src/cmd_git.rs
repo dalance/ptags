@@ -271,8 +271,8 @@ mod tests {
         let opt = Opt::from_iter(args.iter());
         let files = CmdGit::ls_files(&opt);
         assert_eq!(
-            &format!("{:?}", files)[0..68],
-            "Err(Os { code: 2, kind: NotFound, message: \"No such file or director"
+            &format!("{:?}", files)[0..42],
+            "Err(Os { code: 2, kind: NotFound, message:"
         );
     }
 
