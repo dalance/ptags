@@ -1,6 +1,8 @@
-use cmd_ctags::CmdCtags;
-use cmd_git::CmdGit;
+use crate::cmd_ctags::CmdCtags;
+use crate::cmd_git::CmdGit;
 use dirs;
+use failure::{Error, ResultExt};
+use serde_derive::{Deserialize, Serialize};
 use std::fs;
 use std::io::{stdout, BufWriter, Read, Write};
 use std::path::PathBuf;
@@ -18,9 +20,9 @@ use toml;
 #[derive(Debug, Deserialize, Serialize, StructOpt, StructOptToml)]
 #[serde(default)]
 #[structopt(name = "ptags")]
-#[structopt(
-    raw(long_version = "option_env!(\"LONG_VERSION\").unwrap_or(env!(\"CARGO_PKG_VERSION\"))")
-)]
+#[structopt(raw(
+    long_version = "option_env!(\"LONG_VERSION\").unwrap_or(env!(\"CARGO_PKG_VERSION\"))"
+))]
 #[structopt(raw(setting = "clap::AppSettings::AllowLeadingHyphen"))]
 #[structopt(raw(setting = "clap::AppSettings::ColoredHelp"))]
 pub struct Opt {
@@ -29,12 +31,7 @@ pub struct Opt {
     pub thread: usize,
 
     /// Output filename ( filename '-' means output to stdout )
-    #[structopt(
-        short = "f",
-        long = "file",
-        default_value = "tags",
-        parse(from_os_str)
-    )]
+    #[structopt(short = "f", long = "file", default_value = "tags", parse(from_os_str))]
     pub output: PathBuf,
 
     /// Search directory
@@ -46,11 +43,7 @@ pub struct Opt {
     pub stat: bool,
 
     /// Path to ctags binary
-    #[structopt(
-        long = "bin-ctags",
-        default_value = "ctags",
-        parse(from_os_str)
-    )]
+    #[structopt(long = "bin-ctags", default_value = "ctags", parse(from_os_str))]
     pub bin_ctags: PathBuf,
 
     /// Path to git binary
@@ -114,23 +107,6 @@ pub struct Opt {
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-// Error
-// ---------------------------------------------------------------------------------------------------------------------
-
-error_chain! {
-    links {
-        Git(super::cmd_git::Error, super::cmd_git::ErrorKind);
-        Ctags(super::cmd_ctags::Error, super::cmd_ctags::ErrorKind);
-    }
-    foreign_links {
-        Io(::std::io::Error);
-        Utf8(::std::str::Utf8Error);
-        Opt(::structopt_toml::Error);
-        Toml(::toml::ser::Error);
-    }
-}
-
-// ---------------------------------------------------------------------------------------------------------------------
 // Functions
 // ---------------------------------------------------------------------------------------------------------------------
 
@@ -144,7 +120,7 @@ macro_rules! watch_time (
     );
 );
 
-pub fn git_files(opt: &Opt) -> Result<Vec<String>> {
+pub fn git_files(opt: &Opt) -> Result<Vec<String>, Error> {
     let list = CmdGit::get_files(&opt)?;
     let mut files = vec![String::from(""); opt.thread];
 
@@ -156,15 +132,15 @@ pub fn git_files(opt: &Opt) -> Result<Vec<String>> {
     Ok(files)
 }
 
-fn call_ctags(opt: &Opt, files: &[String]) -> Result<Vec<Output>> {
+fn call_ctags(opt: &Opt, files: &[String]) -> Result<Vec<Output>, Error> {
     Ok(CmdCtags::call(&opt, &files)?)
 }
 
-fn get_tags_header(opt: &Opt) -> Result<String> {
-    Ok(CmdCtags::get_tags_header(&opt).chain_err(|| "failed to get ctags header")?)
+fn get_tags_header(opt: &Opt) -> Result<String, Error> {
+    Ok(CmdCtags::get_tags_header(&opt).context("failed to get ctags header")?)
 }
 
-fn write_tags(opt: &Opt, outputs: &[Output]) -> Result<()> {
+fn write_tags(opt: &Opt, outputs: &[Output]) -> Result<(), Error> {
     let mut iters = Vec::new();
     let mut lines = Vec::new();
     for o in outputs {
@@ -213,7 +189,7 @@ fn write_tags(opt: &Opt, outputs: &[Output]) -> Result<()> {
 // Run
 // ---------------------------------------------------------------------------------------------------------------------
 
-pub fn run_opt(opt: &Opt) -> Result<()> {
+pub fn run_opt(opt: &Opt) -> Result<(), Error> {
     if opt.config {
         let toml = toml::to_string(&opt)?;
         println!("{}", toml);
@@ -237,17 +213,17 @@ pub fn run_opt(opt: &Opt) -> Result<()> {
 
     let files;
     let time_git_files = watch_time!({
-        files = git_files(&opt).chain_err(|| "failed to get file list")?;
+        files = git_files(&opt).context("failed to get file list")?;
     });
 
     let outputs;
     let time_call_ctags = watch_time!({
-        outputs = call_ctags(&opt, &files).chain_err(|| "failed to call ctags")?;
+        outputs = call_ctags(&opt, &files).context("failed to call ctags")?;
     });
 
     let time_write_tags = watch_time!({
         let _ = write_tags(&opt, &outputs)
-            .chain_err(|| format!("failed to write file ({:?})", &opt.output))?;
+            .context(format!("failed to write file ({:?})", &opt.output))?;
     });
 
     if opt.stat {
@@ -270,7 +246,7 @@ pub fn run_opt(opt: &Opt) -> Result<()> {
 }
 
 #[cfg_attr(tarpaulin, skip)]
-pub fn run() -> Result<()> {
+pub fn run() -> Result<(), Error> {
     let cfg_path = match dirs::home_dir() {
         Some(mut path) => {
             path.push(".ptags.toml");
@@ -286,11 +262,10 @@ pub fn run() -> Result<()> {
     let opt = match cfg_path {
         Some(path) => {
             let mut f =
-                fs::File::open(&path).chain_err(|| format!("failed to open file ({:?})", path))?;
+                fs::File::open(&path).context(format!("failed to open file ({:?})", path))?;
             let mut s = String::new();
             let _ = f.read_to_string(&mut s);
-            Opt::from_args_with_toml(&s)
-                .chain_err(|| format!("failed to parse toml ({:?})", path))?
+            Opt::from_args_with_toml(&s).context(format!("failed to parse toml ({:?})", path))?
         }
         None => Opt::from_args(),
     };
@@ -329,7 +304,7 @@ mod tests {
         let ret = run_opt(&opt);
         assert_eq!(
             &format!("{:?}", ret)[0..72],
-            "Err(Error(Msg(\"failed to get file list\"), State { next_error: Some(Error"
+            "Err(Os { code: 2, kind: NotFound, message: \"No such file or directory\" }"
         );
     }
 

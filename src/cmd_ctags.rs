@@ -1,4 +1,5 @@
-use bin::Opt;
+use crate::bin::Opt;
+use failure::{bail, Error, Fail, ResultExt};
 #[cfg(target_os = "linux")]
 use nix::fcntl::{fcntl, FcntlArg};
 use std::fs;
@@ -17,27 +18,16 @@ use tempfile::NamedTempFile;
 // Error
 // ---------------------------------------------------------------------------------------------------------------------
 
-error_chain! {
-    foreign_links {
-        Io(::std::io::Error);
-        Utf8(::std::str::Utf8Error);
-        Recv(::std::sync::mpsc::RecvError);
-        Nix(::nix::Error) #[cfg(target_os = "linux")];
-    }
-    errors {
-        ExecFailed(cmd: String, err: String) {
-            description("ctags execute failed")
-            display("failed to execute ctags command ({})\n{}", cmd, err)
-        }
-        CallFailed(cmd: String) {
-            description("ctags call failed")
-            display("failed to call ctags command ({})", cmd)
-        }
-        ConvFailed(s: Vec<u8>) {
-            description("UTF-8 conversion failed")
-            display("failed to convert to UTF-8 ({:?})", s)
-        }
-    }
+#[derive(Debug, Fail)]
+enum CtagsError {
+    #[fail(display = "failed to execute ctags command ({})\n{}", cmd, err)]
+    ExecFailed { cmd: String, err: String },
+
+    #[fail(display = "failed to call ctags command ({})", cmd)]
+    CallFailed { cmd: String },
+
+    #[fail(display = "failed to convert to UTF-8 ({:?})", s)]
+    ConvFailed { s: Vec<u8> },
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -47,7 +37,7 @@ error_chain! {
 pub struct CmdCtags;
 
 impl CmdCtags {
-    pub fn call(opt: &Opt, files: &[String]) -> Result<Vec<Output>> {
+    pub fn call(opt: &Opt, files: &[String]) -> Result<Vec<Output>, Error> {
         let mut args = Vec::new();
         args.push(String::from("-L -"));
         args.push(String::from("-f -"));
@@ -61,7 +51,7 @@ impl CmdCtags {
 
         let cmd = CmdCtags::get_cmd(&opt, &args);
 
-        let (tx, rx) = mpsc::channel::<Result<Output>>();
+        let (tx, rx) = mpsc::channel::<Result<Output, Error>>();
 
         for i in 0..opt.thread {
             let tx = tx.clone();
@@ -93,7 +83,7 @@ impl CmdCtags {
                             let _ = stdin.write(file.as_bytes());
                         }
                         match x.wait_with_output() {
-                            Ok(mut x) => {
+                            Ok(x) => {
                                 let _ = tx.send(Ok(x));
                             }
                             Err(x) => {
@@ -102,7 +92,7 @@ impl CmdCtags {
                         }
                     }
                     Err(_) => {
-                        let _ = tx.send(Err(ErrorKind::CallFailed(cmd).into()));
+                        let _ = tx.send(Err(CtagsError::CallFailed { cmd }.into()));
                     }
                 }
             });
@@ -118,13 +108,14 @@ impl CmdCtags {
             let output = child??;
 
             if !output.status.success() {
-                bail!(ErrorKind::ExecFailed(
-                    cmd,
-                    String::from(
-                        str::from_utf8(&output.stderr)
-                            .chain_err(|| ErrorKind::ConvFailed(output.stderr.to_vec()))?
-                    )
-                ));
+                bail!(CtagsError::ExecFailed {
+                    cmd: cmd,
+                    err: String::from(str::from_utf8(&output.stderr).context(
+                        CtagsError::ConvFailed {
+                            s: output.stderr.to_vec(),
+                        }
+                    )?)
+                });
             }
 
             outputs.push(output);
@@ -133,7 +124,7 @@ impl CmdCtags {
         Ok(outputs)
     }
 
-    pub fn get_tags_header(opt: &Opt) -> Result<String> {
+    pub fn get_tags_header(opt: &Opt) -> Result<String, Error> {
         let tmp_empty = NamedTempFile::new()?;
         let tmp_tags = NamedTempFile::new()?;
         let tmp_tags_path: PathBuf = tmp_tags.path().into();
@@ -169,7 +160,7 @@ impl CmdCtags {
     }
 
     #[allow(dead_code)]
-    fn is_exuberant_ctags(opt: &Opt) -> Result<bool> {
+    fn is_exuberant_ctags(opt: &Opt) -> Result<bool, Error> {
         let output = Command::new(&opt.bin_ctags)
             .arg("--version")
             .current_dir(&opt.dir)
@@ -178,13 +169,13 @@ impl CmdCtags {
     }
 
     #[cfg(target_os = "linux")]
-    fn set_pipe_size(stdin: &ChildStdin, len: i32) -> Result<()> {
+    fn set_pipe_size(stdin: &ChildStdin, len: i32) -> Result<(), Error> {
         fcntl(stdin.as_raw_fd(), FcntlArg::F_SETPIPE_SZ(len))?;
         Ok(())
     }
 
     #[cfg(not(target_os = "linux"))]
-    fn set_pipe_size(_stdin: &ChildStdin, _len: i32) -> Result<()> {
+    fn set_pipe_size(_stdin: &ChildStdin, _len: i32) -> Result<(), Error> {
         Ok(())
     }
 }
@@ -202,23 +193,15 @@ mod tests {
 
     #[test]
     fn test_call() {
-        let args = vec!["ptags", "-t", "1"];
+        let args = vec!["ptags", "-t", "1", "--exclude=README.md"];
         let opt = Opt::from_iter(args.iter());
         let files = git_files(&opt).unwrap();
         let outputs = CmdCtags::call(&opt, &files).unwrap();
         let mut iter = str::from_utf8(&outputs[0].stdout).unwrap().lines();
-        // Exuberant Ctags doesn't support Markdown ( *.md ).
-        if CmdCtags::is_exuberant_ctags(&opt).unwrap() {
-            assert_eq!(
-                iter.next().unwrap_or(""),
-                "BIN_NAME\tMakefile\t/^BIN_NAME = ptags$/;\"\tm"
-            );
-        } else {
-            assert_eq!(
-                iter.next().unwrap_or(""),
-                "Arch Linux\tREADME.md\t/^### Arch Linux$/;\"\tS"
-            );
-        }
+        assert_eq!(
+            iter.next().unwrap_or(""),
+            "BIN_NAME\tMakefile\t/^BIN_NAME = ptags$/;\"\tm"
+        );
     }
 
     #[test]
@@ -256,7 +239,7 @@ mod tests {
         } else {
             assert_eq!(
                 iter.next().unwrap_or(""),
-                "CmdCtags\tsrc/cmd_ctags.rs\t/^impl CmdCtags {$/;\"\tc"
+                "CallFailed\tsrc/cmd_ctags.rs\t/^    CallFailed { cmd: String },$/;\"\te\tenum:CtagsError"
             );
         }
     }
@@ -268,8 +251,8 @@ mod tests {
         let files = git_files(&opt).unwrap();
         let outputs = CmdCtags::call(&opt, &files);
         assert_eq!(
-            &format!("{:?}", outputs)[0..68],
-            "Err(Error(CallFailed(\"cd .; aaa -L - -f -\"), State { next_error: Non"
+            &format!("{:?}", outputs),
+            "Err(CallFailed { cmd: \"cd .; aaa -L - -f -\" })"
         );
     }
 
@@ -281,7 +264,7 @@ mod tests {
         let outputs = CmdCtags::call(&opt, &files);
         assert_eq!(
             &format!("{:?}", outputs)[0..74],
-            "Err(Error(ExecFailed(\"cd .; ctags -L - -f - --u\", \"\"), State { next_error:"
+            "Err(ErrorMessage { msg: ExecFailed { cmd: \"cd .; ctags -L - -f - --u\", err"
         );
     }
 

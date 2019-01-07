@@ -1,4 +1,5 @@
-use bin::Opt;
+use crate::bin::Opt;
+use failure::{bail, Error, Fail, ResultExt};
 use std::process::{Command, Output};
 use std::str;
 
@@ -6,25 +7,16 @@ use std::str;
 // Error
 // ---------------------------------------------------------------------------------------------------------------------
 
-error_chain! {
-    foreign_links {
-        Io(::std::io::Error);
-        Utf8(::std::str::Utf8Error);
-    }
-    errors {
-        ExecFailed(cmd: String, err: String) {
-            description("git execute failed")
-            display("failed to execute git command ({})\n{}", cmd, err)
-        }
-        CallFailed(cmd: String) {
-            description("git call failed")
-            display("failed to call git command ({})", cmd)
-        }
-        ConvFailed(s: Vec<u8>) {
-            description("UTF-8 conversion failed")
-            display("failed to convert to UTF-8 ({:?})", s)
-        }
-    }
+#[derive(Debug, Fail)]
+enum GitError {
+    #[fail(display = "failed to execute git command ({})\n{}", cmd, err)]
+    ExecFailed { cmd: String, err: String },
+
+    #[fail(display = "failed to call git command ({})", cmd)]
+    CallFailed { cmd: String },
+
+    #[fail(display = "failed to convert to UTF-8 ({:?})", s)]
+    ConvFailed { s: Vec<u8> },
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -34,7 +26,7 @@ error_chain! {
 pub struct CmdGit;
 
 impl CmdGit {
-    pub fn get_files(opt: &Opt) -> Result<Vec<String>> {
+    pub fn get_files(opt: &Opt) -> Result<Vec<String>, Error> {
         let mut list = CmdGit::ls_files(&opt)?;
         if opt.exclude_lfs {
             let lfs_list = CmdGit::lfs_ls_files(&opt)?;
@@ -49,7 +41,7 @@ impl CmdGit {
         Ok(list)
     }
 
-    fn call(opt: &Opt, args: &[String]) -> Result<Output> {
+    fn call(opt: &Opt, args: &[String]) -> Result<Output, Error> {
         let cmd = CmdGit::get_cmd(&opt, &args);
         if opt.verbose {
             eprintln!("Call : {}", cmd);
@@ -59,22 +51,23 @@ impl CmdGit {
             .args(args)
             .current_dir(&opt.dir)
             .output()
-            .chain_err(|| ErrorKind::CallFailed(cmd.clone()))?;
+            .context(GitError::CallFailed { cmd: cmd.clone() })?;
 
         if !output.status.success() {
-            bail!(ErrorKind::ExecFailed(
-                cmd,
-                String::from(
-                    str::from_utf8(&output.stderr)
-                        .chain_err(|| ErrorKind::ConvFailed(output.stderr.to_vec()))?
-                )
-            ));
+            bail!(GitError::ExecFailed {
+                cmd: cmd,
+                err: String::from(str::from_utf8(&output.stderr).context(
+                    GitError::ConvFailed {
+                        s: output.stderr.to_vec(),
+                    }
+                )?)
+            });
         }
 
         Ok(output)
     }
 
-    fn ls_files(opt: &Opt) -> Result<Vec<String>> {
+    fn ls_files(opt: &Opt) -> Result<Vec<String>, Error> {
         let mut args = vec![String::from("ls-files")];
         args.push(String::from("--cached"));
         args.push(String::from("--exclude-standard"));
@@ -88,7 +81,9 @@ impl CmdGit {
         let output = CmdGit::call(&opt, &args)?;
 
         let list = str::from_utf8(&output.stdout)
-            .chain_err(|| ErrorKind::ConvFailed(output.stdout.to_vec()))?
+            .context(GitError::ConvFailed {
+                s: output.stdout.to_vec(),
+            })?
             .lines();
         let mut ret = Vec::new();
         for l in list {
@@ -103,7 +98,7 @@ impl CmdGit {
         Ok(ret)
     }
 
-    fn lfs_ls_files(opt: &Opt) -> Result<Vec<String>> {
+    fn lfs_ls_files(opt: &Opt) -> Result<Vec<String>, Error> {
         let mut args = vec![String::from("lfs"), String::from("ls-files")];
         args.append(&mut opt.opt_git_lfs.clone());
 
@@ -113,7 +108,9 @@ impl CmdGit {
         let prefix = CmdGit::show_prefix(&opt)?;
 
         let list = str::from_utf8(&output.stdout)
-            .chain_err(|| ErrorKind::ConvFailed(output.stdout.to_vec()))?
+            .context(GitError::ConvFailed {
+                s: output.stdout.to_vec(),
+            })?
             .lines();
         let mut ret = Vec::new();
         for l in list {
@@ -129,24 +126,28 @@ impl CmdGit {
         Ok(ret)
     }
 
-    fn show_cdup(opt: &Opt) -> Result<String> {
+    fn show_cdup(opt: &Opt) -> Result<String, Error> {
         let args = vec![String::from("rev-parse"), String::from("--show-cdup")];
 
         let output = CmdGit::call(&opt, &args)?;
 
         let mut list = str::from_utf8(&output.stdout)
-            .chain_err(|| ErrorKind::ConvFailed(output.stdout.to_vec()))?
+            .context(GitError::ConvFailed {
+                s: output.stdout.to_vec(),
+            })?
             .lines();
         Ok(String::from(list.next().unwrap_or("")))
     }
 
-    fn show_prefix(opt: &Opt) -> Result<String> {
+    fn show_prefix(opt: &Opt) -> Result<String, Error> {
         let args = vec![String::from("rev-parse"), String::from("--show-prefix")];
 
         let output = CmdGit::call(&opt, &args)?;
 
         let mut list = str::from_utf8(&output.stdout)
-            .chain_err(|| ErrorKind::ConvFailed(output.stdout.to_vec()))?
+            .context(GitError::ConvFailed {
+                s: output.stdout.to_vec(),
+            })?
             .lines();
         Ok(String::from(list.next().unwrap_or("")))
     }
@@ -171,7 +172,7 @@ impl CmdGit {
 #[cfg(test)]
 mod tests {
     use super::CmdGit;
-    use bin::Opt;
+    use crate::bin::Opt;
     use std::fs;
     use std::io::{BufWriter, Write};
     use structopt::StructOpt;
@@ -271,7 +272,7 @@ mod tests {
         let files = CmdGit::ls_files(&opt);
         assert_eq!(
             &format!("{:?}", files)[0..68],
-            "Err(Error(CallFailed(\"cd .; aaa ls-files --cached --exclude-standard"
+            "Err(Os { code: 2, kind: NotFound, message: \"No such file or director"
         );
     }
 
@@ -282,7 +283,7 @@ mod tests {
         let files = CmdGit::ls_files(&opt);
         assert_eq!(
             &format!("{:?}", files)[0..83],
-            "Err(Error(ExecFailed(\"cd .; git ls-files --cached --exclude-standard -aaa\", \"error:"
+            "Err(ErrorMessage { msg: ExecFailed { cmd: \"cd .; git ls-files --cached --exclude-st"
         );
     }
 

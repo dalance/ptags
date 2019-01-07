@@ -8,6 +8,7 @@ categories = ["command-line-utilities", "development-tools"]
 license = "MIT"
 readme = "README.md"
 description = "A parallel universal-ctags wrapper for git repository"
+edition = "2018"
 
 [badges]
 travis-ci = { repository = "dalance/ptags" }
@@ -16,12 +17,12 @@ codecov   = { repository = "dalance/ptags", branch = "master", service = "github
 
 [dependencies]
 dirs           = "1.0.4"
-error-chain    = "0.11.0"
+failure        = "0.1.5"
 nix            = "0.10.0"
 serde          = "1.0.33"
 serde_derive   = "1.0.33"
 structopt      = "0.2.5"
-structopt-toml = "0.2.1"
+structopt-toml = "0.4.0"
 tempfile       = "2.2.0"
 time           = "0.1.39"
 toml           = "0.4.5"
