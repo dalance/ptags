@@ -177,9 +177,10 @@ mod tests {
     use std::io::{BufWriter, Write};
     use structopt::StructOpt;
 
-    static TRACKED_FILES: [&'static str; 19] = [
+    static TRACKED_FILES: [&'static str; 20] = [
         ".cargo/config",
         ".gitattributes",
+        ".github/FUNDING.yml",
         ".gitignore",
         ".gitmodules",
         ".travis.yml",
@@ -286,5 +287,4 @@ mod tests {
             "Err(ErrorMessage { msg: ExecFailed { cmd: \"cd .; git ls-files --cached --exclude-st"
         );
     }
-
 }
