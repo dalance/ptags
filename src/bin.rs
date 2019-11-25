@@ -4,13 +4,14 @@ use dirs;
 use failure::{Error, ResultExt};
 use serde_derive::{Deserialize, Serialize};
 use std::fs;
+use std::io::BufRead;
 use std::io::{stdout, BufWriter, Read, Write};
 use std::path::PathBuf;
 use std::process::Output;
 use std::str;
 use structopt::{clap, StructOpt};
 use structopt_toml::StructOptToml;
-use time::PreciseTime;
+use time::{Duration, PreciseTime};
 use toml;
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -41,6 +42,10 @@ pub struct Opt {
     /// Show statistics
     #[structopt(short = "s", long = "stat")]
     pub stat: bool,
+
+    /// Filename of input file list
+    #[structopt(short = "L", long = "list")]
+    pub list: Option<String>,
 
     /// Path to ctags binary
     #[structopt(long = "bin-ctags", default_value = "ctags", parse(from_os_str))]
@@ -132,6 +137,29 @@ pub fn git_files(opt: &Opt) -> Result<Vec<String>, Error> {
     Ok(files)
 }
 
+pub fn input_files(file: &String, opt: &Opt) -> Result<Vec<String>, Error> {
+    let mut list = Vec::new();
+    if file == &String::from("-") {
+        let stdin = std::io::stdin();
+        for line in stdin.lock().lines() {
+            list.push(String::from(line?));
+        }
+    } else {
+        for line in fs::read_to_string(file)?.lines() {
+            list.push(String::from(line));
+        }
+    }
+
+    let mut files = vec![String::from(""); opt.thread];
+
+    for (i, f) in list.iter().enumerate() {
+        files[i % opt.thread].push_str(f);
+        files[i % opt.thread].push_str("\n");
+    }
+
+    Ok(files)
+}
+
 fn call_ctags(opt: &Opt, files: &[String]) -> Result<Vec<Output>, Error> {
     Ok(CmdCtags::call(&opt, &files)?)
 }
@@ -212,9 +240,15 @@ pub fn run_opt(opt: &Opt) -> Result<(), Error> {
     }
 
     let files;
-    let time_git_files = watch_time!({
-        files = git_files(&opt).context("failed to get file list")?;
-    });
+    let time_git_files;
+    if let Some(ref list) = opt.list {
+        files = input_files(list, &opt).context("failed to get file list")?;
+        time_git_files = Duration::seconds(0);
+    } else {
+        time_git_files = watch_time!({
+            files = git_files(&opt).context("failed to get file list")?;
+        });
+    }
 
     let outputs;
     let time_call_ctags = watch_time!({
