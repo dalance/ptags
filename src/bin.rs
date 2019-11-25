@@ -154,10 +154,10 @@ fn write_tags(opt: &Opt, outputs: &[Output]) -> Result<(), Error> {
     }
 
     let mut f = if opt.output.to_str().unwrap_or("") == "-" {
-        BufWriter::new(Box::new(stdout()) as Box<Write>)
+        BufWriter::new(Box::new(stdout()) as Box<dyn Write>)
     } else {
         let f = fs::File::create(&opt.output)?;
-        BufWriter::new(Box::new(f) as Box<Write>)
+        BufWriter::new(Box::new(f) as Box<dyn Write>)
     };
 
     f.write(get_tags_header(&opt)?.as_bytes())?;

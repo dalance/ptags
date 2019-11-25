@@ -78,9 +78,10 @@ impl CmdCtags {
                     Ok(mut x) => {
                         {
                             let stdin = x.stdin.as_mut().unwrap();
-                            let _ = CmdCtags::set_pipe_size(&stdin, file.len() as i32)
+                            let pipe_size = std::cmp::min(file.len() as i32, 1048576);
+                            let _ = CmdCtags::set_pipe_size(&stdin, pipe_size)
                                 .or_else(|x| tx.send(Err(x.into())));
-                            let _ = stdin.write(file.as_bytes());
+                            let _ = stdin.write_all(file.as_bytes());
                         }
                         match x.wait_with_output() {
                             Ok(x) => {
