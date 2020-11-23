@@ -177,19 +177,21 @@ mod tests {
     use std::io::{BufWriter, Write};
     use structopt::StructOpt;
 
-    static TRACKED_FILES: [&'static str; 20] = [
+    static TRACKED_FILES: [&'static str; 22] = [
         ".cargo/config",
         ".gitattributes",
         ".github/FUNDING.yml",
+        ".github/workflows/coverage.yml",
+        ".github/workflows/periodic.yml",
+        ".github/workflows/regression.yml",
+        ".github/workflows/release.yml",
         ".gitignore",
         ".gitmodules",
-        ".travis.yml",
         "Cargo.lock",
         "Cargo.toml",
         "LICENSE",
         "Makefile",
         "README.md",
-        "appveyor.yml",
         "benches/ptags_bench.rs",
         "src/bin.rs",
         "src/cmd_ctags.rs",
