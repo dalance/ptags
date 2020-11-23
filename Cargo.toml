@@ -25,7 +25,7 @@ structopt      = "0.2.18"
 structopt-toml = "0.4.0"
 tempfile       = "3.1.0"
 time           = "0.1.39"
-toml           = "0.4.5"
+toml           = "0.5.7"
 
 [dev-dependencies]
 bencher = "0.1.5"
