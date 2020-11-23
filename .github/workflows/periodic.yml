@@ -19,7 +19,7 @@ jobs:
       uses: hecrj/setup-rust-action@v1
       with:
         rust-version: ${{ matrix.rust }}
-    - name: Install ctags
+    - name: Install ctags on Linux
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update

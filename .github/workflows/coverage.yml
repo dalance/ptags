@@ -14,7 +14,7 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v1
-    - name: Install ctags
+    - name: Install ctags on Linux
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
