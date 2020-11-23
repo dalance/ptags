@@ -19,6 +19,11 @@ jobs:
       uses: hecrj/setup-rust-action@v1
       with:
         rust-version: ${{ matrix.rust }}
+    - name: Install ctags
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install exuberant-ctags
     - name: Checkout
       uses: actions/checkout@v1
     - name: Run tests
