@@ -1,8 +1,7 @@
 # ptags
 A parallel [universal-ctags](https://ctags.io) wrapper for git repository
 
-[![Build Status](https://travis-ci.org/dalance/ptags.svg?branch=master)](https://travis-ci.org/dalance/ptags)
-[![Build status](https://ci.appveyor.com/api/projects/status/9a5jhfnxnmf7x0xo?svg=true)](https://ci.appveyor.com/project/dalance/ptags)
+[![Actions Status](https://github.com/dalance/ptags/workflows/Regression/badge.svg)](https://github.com/dalance/ptags/actions)
 [![Crates.io](https://img.shields.io/crates/v/ptags.svg)](https://crates.io/crates/ptags)
 [![codecov](https://codecov.io/gh/dalance/ptags/branch/master/graph/badge.svg)](https://codecov.io/gh/dalance/ptags)
 
