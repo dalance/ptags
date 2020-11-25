@@ -15,12 +15,15 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v1
     - name: Install ctags on Linux
-      if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
         sudo apt-get install exuberant-ctags
+    - name: git submodule init
+      run: |
+        git submodule init
+        git submodule update
     - name: Run tests
-      run: cargo tarpaulin -v --out Xml
+      run: cargo tarpaulin -v --out Xml -- --test-threads=1
     - name: Upload coverage
       uses: codecov/codecov-action@v1.0.3
       with:
