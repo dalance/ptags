@@ -11,7 +11,7 @@ use std::process::Output;
 use std::str;
 use structopt::{clap, StructOpt};
 use structopt_toml::StructOptToml;
-use time::{Duration, PreciseTime};
+use time::{Duration, Instant};
 use toml;
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -21,11 +21,9 @@ use toml;
 #[derive(Debug, Deserialize, Serialize, StructOpt, StructOptToml)]
 #[serde(default)]
 #[structopt(name = "ptags")]
-#[structopt(raw(
-    long_version = "option_env!(\"LONG_VERSION\").unwrap_or(env!(\"CARGO_PKG_VERSION\"))"
-))]
-#[structopt(raw(setting = "clap::AppSettings::AllowLeadingHyphen"))]
-#[structopt(raw(setting = "clap::AppSettings::ColoredHelp"))]
+#[structopt(long_version = option_env!("LONG_VERSION").unwrap_or(env!("CARGO_PKG_VERSION")))]
+#[structopt(setting = clap::AppSettings::AllowLeadingHyphen)]
+#[structopt(setting = clap::AppSettings::ColoredHelp)]
 pub struct Opt {
     /// Number of threads
     #[structopt(short = "t", long = "thread", default_value = "8")]
@@ -56,15 +54,15 @@ pub struct Opt {
     pub bin_git: PathBuf,
 
     /// Options passed to ctags
-    #[structopt(short = "c", long = "opt-ctags", raw(number_of_values = "1"))]
+    #[structopt(short = "c", long = "opt-ctags", number_of_values = 1)]
     pub opt_ctags: Vec<String>,
 
     /// Options passed to git
-    #[structopt(short = "g", long = "opt-git", raw(number_of_values = "1"))]
+    #[structopt(short = "g", long = "opt-git", number_of_values = 1)]
     pub opt_git: Vec<String>,
 
     /// Options passed to git-lfs
-    #[structopt(long = "opt-git-lfs", raw(number_of_values = "1"))]
+    #[structopt(long = "opt-git-lfs", number_of_values = 1)]
     pub opt_git_lfs: Vec<String>,
 
     /// Verbose mode
@@ -96,13 +94,13 @@ pub struct Opt {
     pub unsorted: bool,
 
     /// Glob pattern of exclude file ( ex. --exclude '*.rs' )
-    #[structopt(short = "e", long = "exclude", raw(number_of_values = "1"))]
+    #[structopt(short = "e", long = "exclude", number_of_values = 1)]
     pub exclude: Vec<String>,
 
     /// Generate shell completion file
     #[structopt(
         long = "completion",
-        raw(possible_values = "&[\"bash\", \"fish\", \"zsh\", \"powershell\"]")
+        possible_values = &["bash", "fish", "zsh", "powershell"]
     )]
     pub completion: Option<String>,
 
@@ -118,9 +116,9 @@ pub struct Opt {
 macro_rules! watch_time (
     ( $func:block ) => (
         {
-            let beg = PreciseTime::now();
+            let beg = Instant::now();
             $func;
-            beg.to(PreciseTime::now())
+            Instant::now() - beg
         }
     );
 );
@@ -271,9 +269,9 @@ pub fn run_opt(opt: &Opt) -> Result<(), Error> {
         eprintln!("    total     : {}\n", sum);
 
         eprintln!("- Elapsed time[ms]");
-        eprintln!("    git_files : {}", time_git_files.num_milliseconds());
-        eprintln!("    call_ctags: {}", time_call_ctags.num_milliseconds());
-        eprintln!("    write_tags: {}", time_write_tags.num_milliseconds());
+        eprintln!("    git_files : {}", time_git_files.whole_milliseconds());
+        eprintln!("    call_ctags: {}", time_call_ctags.whole_milliseconds());
+        eprintln!("    write_tags: {}", time_write_tags.whole_milliseconds());
     }
 
     Ok(())

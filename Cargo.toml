@@ -16,19 +16,19 @@ appveyor  = { repository = "dalance/ptags", branch = "master", service = "github
 codecov   = { repository = "dalance/ptags", branch = "master", service = "github" }
 
 [dependencies]
-dirs           = "1.0.4"
-failure        = "0.1.8"
-nix            = "0.10.0"
-serde          = "1.0.117"
-serde_derive   = "1.0.117"
-structopt      = "0.2.18"
-structopt-toml = "0.4.0"
-tempfile       = "3.1.0"
-time           = "0.1.39"
-toml           = "0.4.5"
+dirs           = "3"
+failure        = "0.1"
+nix            = "0.19"
+serde          = "1"
+serde_derive   = "1"
+structopt      = "0.3"
+structopt-toml = "0.4"
+tempfile       = "3"
+time           = "0.2"
+toml           = "0.5"
 
 [dev-dependencies]
-bencher = "0.1.5"
+bencher = "0.1"
 
 [lib]
 name = "ptagslib"
