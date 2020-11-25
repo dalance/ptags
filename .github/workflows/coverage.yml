@@ -16,8 +16,8 @@ jobs:
       uses: actions/checkout@v1
     - name: Install ctags on Linux
       run: |
-        sudo apt-get update
-        sudo apt-get install exuberant-ctags
+        apt-get update
+        apt-get install exuberant-ctags
     - name: git submodule init
       run: |
         git submodule init
