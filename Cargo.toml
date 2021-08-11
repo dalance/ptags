@@ -24,7 +24,7 @@ serde_derive   = "1"
 structopt      = "0.3"
 structopt-toml = "0.4"
 tempfile       = "3"
-time           = "0.2"
+time           = "0.3"
 toml           = "0.5"
 
 [dev-dependencies]
