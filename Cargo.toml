@@ -18,7 +18,7 @@ codecov   = { repository = "dalance/ptags", branch = "master", service = "github
 [dependencies]
 dirs           = "4"
 failure        = "0.1"
-nix            = "0.23"
+nix            = "0.24"
 serde          = "1"
 serde_derive   = "1"
 structopt      = "0.3"
