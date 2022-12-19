@@ -75,6 +75,9 @@ impl CmdGit {
             args.push(String::from("--recurse-submodules"));
         } else if opt.include_untracked {
             args.push(String::from("--other"));
+        } else if opt.include_ignored {
+            args.push(String::from("--ignored"));
+            args.push(String::from("--other"));
         }
         args.append(&mut opt.opt_git.clone());
 
@@ -233,6 +236,28 @@ mod tests {
             files,
             vec!["bin.rs", "cmd_ctags.rs", "cmd_git.rs", "lib.rs", "main.rs"]
         );
+    }
+
+    #[test]
+    fn test_get_files_include_ignored() {
+        {
+            let mut f = BufWriter::new(fs::File::create("ignored.gz").unwrap());
+            let _ = f.write(b"");
+        }
+        let args = vec!["ptags", "--include-ignored"];
+        let opt = Opt::from_iter(args.iter());
+        let files: Vec<String> = CmdGit::get_files(&opt)
+            .unwrap()
+            .into_iter()
+            .filter(|f| !f.starts_with("target/"))
+            .collect();
+        let _ = fs::remove_file("ignored.gz");
+
+        let mut expect_files = Vec::new();
+        expect_files.push("ignored.gz");
+        expect_files.push("tags");
+
+        assert_eq!(files, expect_files,);
     }
 
     #[test]
