@@ -348,7 +348,7 @@ dependencies = [
 
 [[package]]
 name = "ptags"
-version = "0.3.4-pre"
+version = "0.3.4"
 dependencies = [
  "bencher",
  "dirs",
