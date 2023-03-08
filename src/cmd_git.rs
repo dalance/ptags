@@ -180,11 +180,12 @@ mod tests {
     use std::io::{BufWriter, Write};
     use structopt::StructOpt;
 
-    static TRACKED_FILES: [&'static str; 22] = [
+    static TRACKED_FILES: [&'static str; 23] = [
         ".cargo/config",
         ".gitattributes",
         ".github/FUNDING.yml",
         ".github/dependabot.yml",
+        ".github/workflows/dependabot_merge.yml",
         ".github/workflows/periodic.yml",
         ".github/workflows/regression.yml",
         ".github/workflows/release.yml",
