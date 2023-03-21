@@ -16,7 +16,7 @@ appveyor  = { repository = "dalance/ptags", branch = "master", service = "github
 codecov   = { repository = "dalance/ptags", branch = "master", service = "github" }
 
 [dependencies]
-dirs           = "4"
+dirs           = "5"
 failure        = "0.1"
 nix            = "0.26"
 serde          = "1"
