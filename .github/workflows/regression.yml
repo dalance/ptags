@@ -30,7 +30,7 @@ jobs:
       if: matrix.os == 'macOS-latest'
       run: |
         brew update
-        brew install --HEAD universal-ctags/universal-ctags/universal-ctags
+        brew install universal-ctags
         brew install git-lfs
     - name: Checkout
       uses: actions/checkout@v1
