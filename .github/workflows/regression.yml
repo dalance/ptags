@@ -25,7 +25,7 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
-        sudo apt-get install exuberant-ctags
+        sudo apt-get install universal-ctags
     - name: Install ctags on macOS
       if: matrix.os == 'macOS-latest'
       run: |
