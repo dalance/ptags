@@ -201,7 +201,7 @@ mod tests {
         let mut iter = str::from_utf8(&outputs[0].stdout).unwrap().lines();
         assert_eq!(
             iter.next().unwrap_or(""),
-            "-target\tMakefile\t/^\tcargo build --release --target=aarch64-apple-darwin$/;\"\tm"
+            "BIN_NAME\tMakefile\t/^BIN_NAME = ptags$/;\"\tm"
         );
     }
 
