@@ -8,7 +8,7 @@ fn main() {
     match run() {
         Err(x) => {
             println!("{}", x);
-            for x in x.iter_chain() {
+            for x in x.chain() {
                 println!("{}", x);
             }
         }

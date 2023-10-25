@@ -1,7 +1,7 @@
 use crate::cmd_ctags::CmdCtags;
 use crate::cmd_git::CmdGit;
+use anyhow::{Context, Error};
 use dirs;
-use failure::{Error, ResultExt};
 use serde_derive::{Deserialize, Serialize};
 use std::fs;
 use std::io::BufRead;
@@ -336,7 +336,7 @@ mod tests {
         let ret = run_opt(&opt);
         assert_eq!(
             &format!("{:?}", ret)[0..42],
-            "Err(Os { code: 2, kind: NotFound, message:"
+            "Err(failed to get file list\n\nCaused by:\n  "
         );
     }
 

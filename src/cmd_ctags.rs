@@ -1,5 +1,5 @@
 use crate::bin::Opt;
-use failure::{bail, Error, Fail, ResultExt};
+use anyhow::{bail, Context, Error};
 #[cfg(target_os = "linux")]
 use nix::fcntl::{fcntl, FcntlArg};
 use std::fs;
@@ -13,20 +13,21 @@ use std::str;
 use std::sync::mpsc;
 use std::thread;
 use tempfile::NamedTempFile;
+use thiserror::Error;
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Error
 // ---------------------------------------------------------------------------------------------------------------------
 
-#[derive(Debug, Fail)]
+#[derive(Debug, Error)]
 enum CtagsError {
-    #[fail(display = "failed to execute ctags command ({})\n{}", cmd, err)]
+    #[error("failed to execute ctags command ({})\n{}", cmd, err)]
     ExecFailed { cmd: String, err: String },
 
-    #[fail(display = "failed to call ctags command ({})", cmd)]
+    #[error("failed to call ctags command ({})", cmd)]
     CallFailed { cmd: String },
 
-    #[fail(display = "failed to convert to UTF-8 ({:?})", s)]
+    #[error("failed to convert to UTF-8 ({:?})", s)]
     ConvFailed { s: Vec<u8> },
 }
 
@@ -253,7 +254,7 @@ mod tests {
         let outputs = CmdCtags::call(&opt, &files);
         assert_eq!(
             &format!("{:?}", outputs),
-            "Err(CallFailed { cmd: \"cd .; aaa -L - -f -\" })"
+            "Err(failed to call ctags command (cd .; aaa -L - -f -))"
         );
     }
 
@@ -264,8 +265,8 @@ mod tests {
         let files = git_files(&opt).unwrap();
         let outputs = CmdCtags::call(&opt, &files);
         assert_eq!(
-            &format!("{:?}", outputs)[0..74],
-            "Err(ErrorMessage { msg: ExecFailed { cmd: \"cd .; ctags -L - -f - --u\", err"
+            &format!("{:?}", outputs)[0..60],
+            "Err(failed to execute ctags command (cd .; ctags -L - -f - -"
         );
     }
 

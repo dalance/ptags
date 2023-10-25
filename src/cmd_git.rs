@@ -1,21 +1,22 @@
 use crate::bin::Opt;
-use failure::{bail, Error, Fail, ResultExt};
+use anyhow::{bail, Context, Error};
 use std::process::{Command, Output};
 use std::str;
+use thiserror::Error;
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Error
 // ---------------------------------------------------------------------------------------------------------------------
 
-#[derive(Debug, Fail)]
+#[derive(Debug, Error)]
 enum GitError {
-    #[fail(display = "failed to execute git command ({})\n{}", cmd, err)]
+    #[error("failed to execute git command ({})\n{}", cmd, err)]
     ExecFailed { cmd: String, err: String },
 
-    #[fail(display = "failed to call git command ({})", cmd)]
+    #[error("failed to call git command ({})", cmd)]
     CallFailed { cmd: String },
 
-    #[fail(display = "failed to convert to UTF-8 ({:?})", s)]
+    #[error("failed to convert to UTF-8 ({:?})", s)]
     ConvFailed { s: Vec<u8> },
 }
 
@@ -301,7 +302,7 @@ mod tests {
         let files = CmdGit::ls_files(&opt);
         assert_eq!(
             &format!("{:?}", files)[0..42],
-            "Err(Os { code: 2, kind: NotFound, message:"
+            "Err(failed to call git command (cd .; aaa "
         );
     }
 
@@ -312,7 +313,7 @@ mod tests {
         let files = CmdGit::ls_files(&opt);
         assert_eq!(
             &format!("{:?}", files)[0..83],
-            "Err(ErrorMessage { msg: ExecFailed { cmd: \"cd .; git ls-files --cached --exclude-st"
+            "Err(failed to execute git command (cd .; git ls-files --cached --exclude-standard -"
         );
     }
 }

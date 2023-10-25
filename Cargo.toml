@@ -16,14 +16,15 @@ appveyor  = { repository = "dalance/ptags", branch = "master", service = "github
 codecov   = { repository = "dalance/ptags", branch = "master", service = "github" }
 
 [dependencies]
+anyhow         = "1.0"
 dirs           = "5"
-failure        = "0.1"
-nix            = "0.26"
+nix            = { version = "0.27.1", features = ["fs"] }
 serde          = "1"
 serde_derive   = "1"
 structopt      = "0.3"
-structopt-toml = "0.4"
+structopt-toml = "0.5"
 tempfile       = "3"
+thiserror      = "1.0"
 time           = "0.3"
 toml           = "0.8"
 
