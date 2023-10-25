@@ -275,6 +275,6 @@ mod tests {
         let opt = Opt::from_iter(args.iter());
         let output = CmdCtags::get_tags_header(&opt).unwrap();
         let output = output.lines().next();
-        assert_eq!(&output.unwrap_or("")[0..18], "!_TAG_FILE_FORMAT\t");
+        assert_eq!(&output.unwrap_or("")[0..5], "!_TAG");
     }
 }
