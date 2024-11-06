@@ -24,7 +24,7 @@ serde_derive   = "1"
 structopt      = "0.3"
 structopt-toml = "0.5"
 tempfile       = "3"
-thiserror      = "1.0"
+thiserror      = "2.0"
 time           = "0.3"
 toml           = "0.8"
 
