@@ -5,8 +5,6 @@ use nix::fcntl::{fcntl, FcntlArg};
 use std::fs;
 use std::fs::File;
 use std::io::{BufReader, Read, Write};
-#[cfg(target_os = "linux")]
-use std::os::unix::io::AsRawFd;
 use std::path::PathBuf;
 use std::process::{ChildStdin, Command, Output, Stdio};
 use std::str;
@@ -172,7 +170,7 @@ impl CmdCtags {
 
     #[cfg(target_os = "linux")]
     fn set_pipe_size(stdin: &ChildStdin, len: i32) -> Result<(), Error> {
-        fcntl(stdin.as_raw_fd(), FcntlArg::F_SETPIPE_SZ(len))?;
+        fcntl(stdin, FcntlArg::F_SETPIPE_SZ(len))?;
         Ok(())
     }
 
