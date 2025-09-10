@@ -9,9 +9,9 @@ use std::io::{stdout, BufWriter, Read, Write};
 use std::path::PathBuf;
 use std::process::Output;
 use std::str;
+use std::time::{Duration, Instant};
 use structopt::{clap, StructOpt};
 use structopt_toml::StructOptToml;
-use time::{Duration, Instant};
 use toml;
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -241,7 +241,7 @@ pub fn run_opt(opt: &Opt) -> Result<(), Error> {
     let time_git_files;
     if let Some(ref list) = opt.list {
         files = input_files(list, &opt).context("failed to get file list")?;
-        time_git_files = Duration::seconds(0);
+        time_git_files = Duration::from_secs(0);
     } else {
         time_git_files = watch_time!({
             files = git_files(&opt).context("failed to get file list")?;
@@ -269,15 +269,14 @@ pub fn run_opt(opt: &Opt) -> Result<(), Error> {
         eprintln!("    total     : {}\n", sum);
 
         eprintln!("- Elapsed time[ms]");
-        eprintln!("    git_files : {}", time_git_files.whole_milliseconds());
-        eprintln!("    call_ctags: {}", time_call_ctags.whole_milliseconds());
-        eprintln!("    write_tags: {}", time_write_tags.whole_milliseconds());
+        eprintln!("    git_files : {}", time_git_files.as_millis());
+        eprintln!("    call_ctags: {}", time_call_ctags.as_millis());
+        eprintln!("    write_tags: {}", time_write_tags.as_millis());
     }
 
     Ok(())
 }
 
-#[cfg_attr(tarpaulin, skip)]
 pub fn run() -> Result<(), Error> {
     let cfg_path = match dirs::home_dir() {
         Some(mut path) => {
