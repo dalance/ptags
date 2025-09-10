@@ -213,18 +213,10 @@ mod tests {
         let files = git_files(&opt).unwrap();
         let outputs = CmdCtags::call(&opt, &files).unwrap();
         let mut iter = str::from_utf8(&outputs[0].stdout).unwrap().lines();
-        if cfg!(target_os = "linux") {
-            assert_eq!(
+        assert_eq!(
                 iter.next().unwrap_or(""),
                 "VERSION\tMakefile\t/^VERSION = $(patsubst \"%\",%, $(word 3, $(shell grep version Cargo.toml)))$/;\"\tm"
             );
-        }
-        if cfg!(target_os = "macos") {
-            assert_eq!(
-                iter.next().unwrap_or(""),
-                "package\tCargo.toml\t/^[package]$/;\"\tt"
-            );
-        }
     }
 
     #[test]
