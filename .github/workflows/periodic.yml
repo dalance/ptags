@@ -23,7 +23,7 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
-        sudo apt-get install exuberant-ctags
+        sudo apt-get install universal-ctags
     - name: Checkout
       uses: actions/checkout@v1
     - name: git submodule init
