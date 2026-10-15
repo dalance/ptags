@@ -132,12 +132,13 @@ impl CmdCtags {
         // So the tmp_tags must be closed and deleted.
         tmp_tags.close()?;
 
-        let _ = Command::new(&opt.bin_ctags)
-            .arg(format!("-L {}", tmp_empty.path().to_string_lossy()))
-            .arg(format!("-f {}", tmp_tags_path.to_string_lossy()))
-            .args(&opt.opt_ctags)
-            .current_dir(&opt.dir)
-            .status();
+        let mut cmd = Command::new(&opt.bin_ctags);
+        cmd.arg(format!("-L {}", tmp_empty.path().to_string_lossy()))
+            .arg(format!("-f {}", tmp_tags_path.to_string_lossy()));
+        if opt.unsorted {
+            cmd.arg("--sort=no");
+        }
+        let _ = cmd.args(&opt.opt_ctags).current_dir(&opt.dir).status();
         let mut f = BufReader::new(File::open(&tmp_tags_path)?);
         let mut s = String::new();
         f.read_to_string(&mut s)?;
