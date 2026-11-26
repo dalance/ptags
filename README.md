@@ -90,23 +90,23 @@ ARGS:
     <DIR>    Search directory [default: .]
 ```
 
-You can pass options to `ctags` by`-c`/`--ctags_opt` option like below.
+You can pass options to `ctags` by `-c`/`--opt-ctags` option like below.
 
 ```
 ptags -c --links=no -c --languages=Rust
 ```
 
 Searched file types per options are below.
-`--include-submodule` and `--include_untracked` are exclusive.
-This is the restriction of `git ls-files`.
-Any include/exclude options without the above combination can be used simultaneously.
+`--include-ignored` selects only ignored files, not tracked files.
+Use one of `--include-submodule`, `--include-untracked`, or `--include-ignored`.
+If combined, only the first mode in that order takes effect; `--exclude-lfs` can be combined with any mode.
 
 | File type     | Default  | --exclude-lfs | --include-ignored | --include-submodule | --include-untracked |
 | ------------- | -------- | ------------- | ----------------- | ------------------- | ------------------- |
-| tracked       | o        | o             | o                 | o                   | o                   |
+| tracked       | o        | o             | x                 | o                   | o                   |
 | untracked     | x        | x             | x                 | x                   | o                   |
 | ignored       | x        | x             | o                 | x                   | x                   |
-| lfs tracked   | o        | x             | o                 | o                   | o                   |
+| lfs tracked   | o        | x             | x                 | o                   | o                   |
 | in submodules | x        | x             | x                 | o                   | x                   |
 
 You can override any default option by `~/.ptags.toml` like below.
